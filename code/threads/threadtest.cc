@@ -11,9 +11,11 @@
 
 #include "copyright.h"
 #include "system.h"
+#include "../dllist/dllist.h"
 
 // testnum is set in main.cc
 int testnum = 1;
+DLList *ls=new DLList();
 
 //----------------------------------------------------------------------
 // SimpleThread
@@ -31,8 +33,8 @@ SimpleThread(int which)
     
     for (num = 0; num < 5; num++) {
 	printf("*** thread %d looped %d times\n", which, num);
-        currentThread->Yield();
-    }
+         currentThread->Yield();
+   }
 }
 
 //----------------------------------------------------------------------
@@ -52,6 +54,47 @@ ThreadTest1()
     SimpleThread(0);
 }
 
+void listAdd(int which){
+    int i;
+    printf("Thread num:%d, list add.\n",which);
+    for(i=101;i<=105;++i){
+        ls->SortedInsert(NULL,i);
+        //currentThread->Yield();
+    }
+    /*for(i=0;i<5;++i){
+        ls->Prepend(NULL);
+    }*/
+    ls->Show();
+}
+void listRemove(int which){
+    int i,k;
+    printf("Thread num:%d, list remove\n",which);
+    for(i=0;i<15;++i){
+        ls->Remove(&k);
+        //currentThread->Yield();
+    }
+    //dllFunc2(ls,5);
+    /*for(i=0;i<5;++i){
+        ls->Append(NULL);
+    }*/
+    
+    for(i=102;i<104;++i){
+        ls->SortedRemove(i);
+    }
+    ls->Show();
+}
+
+void
+ThreadTest2(){
+    Thread *t = new Thread("test dllist");
+    //create a list    
+    dllFunc1(ls,10);
+    ls->Show();
+    //t->Fork(listAdd,1);
+    t->Fork(listRemove,2);
+    //listRemove(2);
+    listAdd(1);
+}
 //----------------------------------------------------------------------
 // ThreadTest
 // 	Invoke a test routine.
@@ -64,6 +107,10 @@ ThreadTest()
     case 1:
 	ThreadTest1();
 	break;
+    case 2:{
+               ThreadTest2();
+               break;
+           }
     default:
 	printf("No test specified.\n");
 	break;
