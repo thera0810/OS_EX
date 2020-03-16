@@ -50,7 +50,7 @@ THREAD_H =../threads/copyright.h\
 	../machine/stats.h\
 	../machine/timer.h\
 	../threads/hello.h\
-	../dllist/dllist.h
+	../threads/dllist.h
 
 THREAD_C =../threads/main.cc\
 	../threads/list.cc\
@@ -66,8 +66,8 @@ THREAD_C =../threads/main.cc\
 	../machine/stats.cc\
 	../machine/timer.cc\
 	../threads/hello.c\
-	../dllist/dllist.cc\
-	../dllist/dllist-driver.cc
+	../threads/dllist.cc\
+	../threads/dllist-driver.cc
 
 THREAD_S = ../threads/switch.s
 
@@ -135,7 +135,7 @@ switch.o: ../threads/switch.s
 	$(AS) -o switch.o swtch.s
 
 depend: $(CFILES) $(HFILES)
-	$(CC) $(INCPATH) $(DEFINES) $(HOST) -DCHANGED -M $(CFILES) > makedep
+	$(CC) $(INCPATH) $(DEFINES) $(HOST) -DCHANGED -MM $(CFILES) > makedep
 	echo '/^# DO NOT DELETE THIS LINE/+2,$$d' >eddep
 	echo '$$r makedep' >>eddep
 	echo 'w' >>eddep
@@ -144,3 +144,6 @@ depend: $(CFILES) $(HFILES)
 	echo '# DEPENDENCIES MUST END AT END OF FILE' >> Makefile
 	echo '# IF YOU PUT STUFF HERE IT WILL GO AWAY' >> Makefile
 	echo '# see make depend above' >> Makefile
+
+clean:
+	rm $(PROGRAM) $(OFILES)
