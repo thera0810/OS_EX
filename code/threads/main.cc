@@ -104,13 +104,13 @@ main(int argc, char **argv)
     }
 
     Hello();
-    printf("this is the main test! testnum=%d\n",testnum);
-    DLList *list=new DLList();
-    // printf(list->IsEmpty()?"empty list\n":"not empty\n");
-    //dllFunc1(list,10);
-    //list->Show();
-    //dllFunc2(list,5);
-    //list->Show();
+    
+    printf("this is the threads main test!\n");
+    DLList *list = new DLList();
+    dllFunc1(list,10);
+    list->Show();
+    dllFunc2(list,5);
+    list->Show();
 
     ThreadTest();
 #endif

@@ -7,7 +7,7 @@ void dllFunc1(DLList *list, int N){
     srand((unsigned)time(NULL)); 
     for(int i=0;i<N;++i){
         int k=rand()%(10*N);
-        std::cout<<k<<std::endl;
+        printf("%d\n",k);
         list->SortedInsert(NULL,k);
     }
 }
@@ -20,5 +20,6 @@ void dllFunc2(DLList *list, int N){
         void *item=list->Remove(&k);
         printf("%d ",k);
     }
-    std::cout<<std::endl;
+    printf("\n");
 }
+

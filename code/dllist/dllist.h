@@ -1,4 +1,3 @@
-#include <iostream>
 #include <stdio.h>
 
 
@@ -40,3 +39,4 @@ void dllFunc1(DLList *list, int N);
 //removes N items starting from the head of the list 
 //and prints out the removed items to the console
 void dllFunc2(DLList *list, int N);
+
