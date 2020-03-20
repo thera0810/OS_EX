@@ -117,9 +117,7 @@ main(int argc, char **argv)
       }
     }
 
-    printf("\n\n=========================Threads Test Code Begin=========================\n\n");
-
-    //Hello();
+    printf("\n\n+---------------------------\033[1;35;40mThreads Test Code Begin\033[m-------------------------+\n");
 
     ThreadTest();
 
@@ -179,7 +177,6 @@ main(int argc, char **argv)
         }
 #endif // NETWORK
     }
-
 
     currentThread->Finish();	// NOTE: if the procedure "main" 
 				// returns, then the program "nachos"

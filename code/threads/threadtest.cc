@@ -18,7 +18,45 @@
 int testnum = 1;
 int threadnum=2;
 int N=10;
+char threadname[10][5]={0};
 DLList *ls=new DLList();
+
+
+
+//---------------------------ThreadTest20---------------------------
+void SimpleThreadFunc2(int n)
+{
+    printf("\n/------- thread %s is running -------\\\n",currentThread->getName());
+    dllFunc2(ls,n);
+    printf("\n\\------- thread %s is end     -------/\n",currentThread->getName());
+}
+
+void ThreadTest20()
+{
+    DEBUG('t', "Entering ThreadTest2");
+    dllFunc1(ls,N);
+    for (int i=0;i<threadnum;++i)
+    {
+        sprintf(threadname[i],"%d",i);
+        Thread *t = new Thread(threadname[i]);
+        t->Fork(SimpleThreadFunc2, 3);
+    }
+}
+//---------------------------ThreadTest20---------------------------
+
+//---------------------------ThreadTest21---------------------------
+void ThreadTest21()
+{
+    DEBUG('t', "Entering ThreadTest2");
+    dllFunc1(ls,N);
+    for (int i=0;i<threadnum;++i)
+    {
+        sprintf(threadname[i],"%d",i);
+        Thread *t = new Thread(threadname[i]);
+        t->Fork(SimpleThreadFunc2, 1);
+    }
+}
+//---------------------------ThreadTest21---------------------------
 
 
 //---------------------------ThreadTest1---------------------------
@@ -39,8 +77,8 @@ SimpleThread(int which)
     int num;
     
     for (num = 0; num < 5; num++) {
-	printf("*** thread %d looped %d times\n", which, num);
-         currentThread->Yield();
+        printf("*** thread %d looped %d times\n", which, num);
+        currentThread->Yield();
    }
 }
 
@@ -100,6 +138,12 @@ void ThreadTest7()
 void
 ThreadTest()
 {
+    printf("|%*s|\n",75," ");
+    printf("|%*s\033[1;32;40mtestnum    = %-2d\033[m%*s|\n",30," ",testnum,30," ");
+    printf("|%*s\033[1;32;40mthreadnum  = %-2d\033[m%*s|\n",30," ",threadnum,30," ");
+    printf("|%*s\033[1;32;40melementnum = %-2d\033[m%*s|\n",30," ",N,30," ");
+    printf("+---------------------------------------------------------------------------+\n");
+
     switch (testnum) {
     case 1:
     {
@@ -107,9 +151,21 @@ ThreadTest()
         break;
     }
 	
+    case 20:
+    {
+        //./nachos -q 20 -T 3
+        ThreadTest20();
+        break;
+    }
+        case 21:
+    {
+        //./nachos -q 21 -T 3
+        ThreadTest21();
+        break;
+    }
+
     case 70:
     {
-        printf("====================This is the main test! testnum=%d====================\n",testnum);
         ThreadTest7();
         break;
     }

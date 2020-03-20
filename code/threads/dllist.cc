@@ -71,6 +71,14 @@ void *DLList::Remove(int *keyPtr){
     }
     else{
         DLLElement *p=first;
+
+        if (testnum==21)
+        {
+            printf("\n\033[1;31;40m//======= thread %s yield =======\\\\\033[m\n",currentThread->getName());
+            currentThread->Yield();
+            printf("\n\\\\------- thread %s is running -------//\n",currentThread->getName());
+        }
+
         first=first->next;
         first->prev=NULL;
         *keyPtr=p->key;
@@ -95,9 +103,9 @@ void DLList::SortedInsert(void *item, int sortKey){
 
         if (testnum==70 && strcmp(currentThread->getName(),"main")==0)
         {
-            printf("\n======= thread %s yield =======\n",currentThread->getName());
+            printf("\n\033[1;31;40m//======= thread %s yield =======\\\\\033[m\n",currentThread->getName());
             currentThread->Yield();
-            printf("\n------- thread %s is running -------\n",currentThread->getName());
+            printf("\n\\\\------- thread %s is running -------//\n",currentThread->getName());
         }
 
     }
