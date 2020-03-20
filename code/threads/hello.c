@@ -2,5 +2,5 @@
 
 void Hello()
 {
-    printf("Hello f******* nachos!\n");
+    printf("Hello f**king nachos!\n");
 }

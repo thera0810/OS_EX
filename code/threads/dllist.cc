@@ -1,4 +1,10 @@
 #include "dllist.h"
+#include "copyright.h"
+#include "thread.h"
+#include <string.h>
+
+extern Thread *currentThread;
+extern int testnum;
 
 DLLElement::DLLElement( void *itemPtr, int sortKey){
     prev=next=NULL;
@@ -50,6 +56,7 @@ void DLList::Append(void *item){
 
 void *DLList::Remove(int *keyPtr){
     if(IsEmpty()){
+        printf("Remove failure: List is empty!\n");
         keyPtr=NULL;
         return NULL;
     }
@@ -85,6 +92,12 @@ void DLList::SortedInsert(void *item, int sortKey){
         DLLElement *p= new DLLElement(item,sortKey);
         first=p;
         last=p;
+        if (testnum==70 && strcmp(currentThread->getName(),"main")==0)
+        {
+            printf("\n======= thread %s yield =======\n",currentThread->getName());
+            currentThread->Yield();
+            printf("\n------- thread %s is running -------\n",currentThread->getName());
+        }
     }
     else{// not empty
         DLLElement *pi=first;
@@ -118,6 +131,12 @@ void DLList::SortedInsert(void *item, int sortKey){
 }
 
 void *DLList::SortedRemove(int sortKey){
+
+    if(IsEmpty()){
+        printf("Remove failure: List is empty!\n");
+        return NULL;
+    }
+
     DLLElement *pi=first;
     while(pi&&pi->key!=sortKey){
         pi=pi->next;
@@ -133,7 +152,7 @@ void *DLList::SortedRemove(int sortKey){
     }
     else{
         if(pi==first){//delete first
-            first==pi->next;
+            first=pi->next;
             first->prev=NULL;
             delete pi;
         }
@@ -152,6 +171,10 @@ void *DLList::SortedRemove(int sortKey){
 
 void DLList::Show(){
     printf("\n***show list***\n");
+    if(IsEmpty()){
+        printf("Show failure: List is empty!\n");
+        return;
+    }
     DLLElement * p=first;
     while(p!=NULL){
         printf("%d ",p->key);

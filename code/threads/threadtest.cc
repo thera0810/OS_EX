@@ -12,10 +12,17 @@
 #include "copyright.h"
 #include "system.h"
 #include "../dllist/dllist.h"
+#include <stdio.h>
 
 // testnum is set in main.cc
 int testnum = 1;
+int threadnum=2;
+int N=10;
 DLList *ls=new DLList();
+
+
+//---------------------------ThreadTest1---------------------------
+
 
 //----------------------------------------------------------------------
 // SimpleThread
@@ -54,66 +61,65 @@ ThreadTest1()
     SimpleThread(0);
 }
 
-void listAdd(int which){
-    int i;
-    printf("Thread num:%d, list add.\n",which);
-    for(i=101;i<=105;++i){
-        ls->SortedInsert(NULL,i);
-        //currentThread->Yield();
-    }
-    /*for(i=0;i<5;++i){
-        ls->Prepend(NULL);
-    }*/
-    ls->Show();
-}
-void listRemove(int which){
-    int i,k;
-    printf("Thread num:%d, list remove\n",which);
-    /*for(i=0;i<15;++i){
-        ls->Remove(&k);
-        //currentThread->Yield();
-    }*/
-    //dllFunc2(ls,5);
-    /*for(i=0;i<5;++i){
-        ls->Append(NULL);
-    }*/
-    
-    for(i=102;i<104;++i){
-        ls->SortedRemove(i);
-    }
-    ls->Show();
+//---------------------------ThreadTest1---------------------------
+
+
+//---------------------------ThreadTest7---------------------------
+
+void SimpleThread2(int which)
+{
+    printf("\n------- thread %s is running -------\n",currentThread->getName());
+    dllFunc1(ls,N);
+    dllFunc2(ls,N);
 }
 
-void
-ThreadTest2(){
-    Thread *t = new Thread("test dllist");
-    //create a list    
-    dllFunc1(ls,10);
-    ls->Show();
-    //t->Fork(listAdd,1);
-    t->Fork(listRemove,2);
-    //listRemove(2);
-    listAdd(1);
+void ThreadTest2()
+{
+    DEBUG('t', "Entering ThreadTest2");
+
+    for (int i=1;i<threadnum;i++)
+    {
+        char threadname[10]={0};
+        sprintf(threadname,"%d",i);
+
+        Thread *t = new Thread(threadname);
+        
+        t->Fork(SimpleThread2, i);
+    }
+
+    SimpleThread2(0);
 }
+
+//---------------------------ThreadTest7---------------------------
+
+
 //----------------------------------------------------------------------
 // ThreadTest
 // 	Invoke a test routine.
 //----------------------------------------------------------------------
-
 void
 ThreadTest()
 {
     switch (testnum) {
     case 1:
-	ThreadTest1();
-	break;
-    case 2:{
-               ThreadTest2();
-               break;
-           }
+    {
+        ThreadTest1();
+        break;
+    }
+	
+    case 70:
+    {
+        printf("====================This is the main test! testnum=%d====================\n",testnum);
+        ThreadTest2();
+        break;
+    }
+
     default:
-	printf("No test specified.\n");
-	break;
+    {
+        printf("No test specified.\n");
+        break;
+    }
+	
     }
 }
 

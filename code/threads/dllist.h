@@ -31,7 +31,7 @@ public:
     void Show();
 private:
     DLLElement *first; // head of the list, NULL if empty
-    DLLElement *last; // last element of the list, NULL if empty
+    DLLElement *last;  // last element of the list, NULL if empty
 };
 
 //Generate random N elems and insert them to a dllist

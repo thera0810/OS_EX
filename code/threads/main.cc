@@ -57,6 +57,8 @@
 
 #ifdef THREADS
 extern int testnum;
+extern int threadnum;
+extern int N;
 #endif
 
 // External functions used by this file
@@ -88,31 +90,39 @@ main(int argc, char **argv)
 
     DEBUG('t', "Entering main");
     (void) Initialize(argc, argv);
+
     
 #ifdef THREADS
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
       argCount = 1;
+
       switch (argv[0][1]) {
       case 'q':
         testnum = atoi(argv[1]);
         argCount++;
         break;
+      case 'n':
+        N = atoi(argv[1]);
+        argCount++;
+        break;
+      case 't':
+        threadnum = atoi(argv[1]);
+        argCount++;
+        break;
       default:
         testnum = 1;
+        N = 10;
+        threadnum = 2;
         break;
       }
     }
 
-    Hello();
-    printf("this is the main test! testnum=%d\n",testnum);
-    //DLList *list=new DLList();
-    // printf(list->IsEmpty()?"empty list\n":"not empty\n");
-    //dllFunc1(list,10);
-    //list->Show();
-    //dllFunc2(list,5);
-    //list->Show();
+    printf("\n\n=========================Threads Test Code Begin=========================\n\n");
+
+    //Hello();
 
     ThreadTest();
+
 #endif
 
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
@@ -170,6 +180,7 @@ main(int argc, char **argv)
 #endif // NETWORK
     }
 
+
     currentThread->Finish();	// NOTE: if the procedure "main" 
 				// returns, then the program "nachos"
 				// will exit (as any other normal program
@@ -178,5 +189,6 @@ main(int argc, char **argv)
 				// to those threads by saying that the
 				// "main" thread is finished, preventing
 				// it from returning.
+
     return(0);			// Not reached...
 }
