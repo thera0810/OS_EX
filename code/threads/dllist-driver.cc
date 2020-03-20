@@ -10,12 +10,12 @@ extern int testnum;
 
 //Generate random N elems and insert them to a dllist
 void dllFunc1(DLList *list, int N){
-    srand((unsigned)time(NULL)); 
+    //srand((unsigned)time(NULL)); 
     printf("\nInsert %d elems in the list:\n",N);
     for(int i=0;i<N;++i){
-        int k=rand()%(10*N);
-        printf("%d ",k);
-        list->SortedInsert(NULL,k);
+        //int k=rand()%(10*N);
+        printf("%d ",i);
+        list->SortedInsert(NULL,i);
     }
     printf("\n");
 }

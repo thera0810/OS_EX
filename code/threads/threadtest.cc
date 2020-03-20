@@ -66,14 +66,14 @@ ThreadTest1()
 
 //---------------------------ThreadTest7---------------------------
 
-void SimpleThread2(int which)
+void SimpleThread7(int which)
 {
     printf("\n------- thread %s is running -------\n",currentThread->getName());
     dllFunc1(ls,N);
     dllFunc2(ls,N);
 }
 
-void ThreadTest2()
+void ThreadTest7()
 {
     DEBUG('t', "Entering ThreadTest2");
 
@@ -84,10 +84,10 @@ void ThreadTest2()
 
         Thread *t = new Thread(threadname);
         
-        t->Fork(SimpleThread2, i);
+        t->Fork(SimpleThread7, i);
     }
 
-    SimpleThread2(0);
+    SimpleThread7(0);
 }
 
 //---------------------------ThreadTest7---------------------------
@@ -110,9 +110,10 @@ ThreadTest()
     case 70:
     {
         printf("====================This is the main test! testnum=%d====================\n",testnum);
-        ThreadTest2();
+        ThreadTest7();
         break;
     }
+
 
     default:
     {

@@ -92,12 +92,14 @@ void DLList::SortedInsert(void *item, int sortKey){
         DLLElement *p= new DLLElement(item,sortKey);
         first=p;
         last=p;
+
         if (testnum==70 && strcmp(currentThread->getName(),"main")==0)
         {
             printf("\n======= thread %s yield =======\n",currentThread->getName());
             currentThread->Yield();
             printf("\n------- thread %s is running -------\n",currentThread->getName());
         }
+
     }
     else{// not empty
         DLLElement *pi=first;

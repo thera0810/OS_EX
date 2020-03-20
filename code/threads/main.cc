@@ -101,11 +101,11 @@ main(int argc, char **argv)
         testnum = atoi(argv[1]);
         argCount++;
         break;
-      case 'n':
+      case 'N':
         N = atoi(argv[1]);
         argCount++;
         break;
-      case 't':
+      case 'T':
         threadnum = atoi(argv[1]);
         argCount++;
         break;
