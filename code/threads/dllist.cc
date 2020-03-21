@@ -44,14 +44,28 @@ void DLList::Append(void *item){
     if(IsEmpty()){
         first=new DLLElement(item,10);
         last=first;
-    }
+		printf("\n*** thread %s Appended the last item ***\n", currentThread->getName());
+	}
     else{
         DLLElement *p=new DLLElement(item,last->key+1);
         p->next=NULL;
-        p->prev=last;
+        p->prev=last; 
+		if (testnum == 80 && strcmp(currentThread->getName(), "0") == 0)
+		{
+			printf("\n\033[1;31;40m//======= thread %s yield =======\\\\\033[m\n", currentThread->getName());
+			currentThread->Yield();
+			printf("\n\\\\------- thread %s is running -------//\n", currentThread->getName());
+		}
         last->next=p;
+		if (testnum == 81 && strcmp(currentThread->getName(), "0") == 0)
+		{
+			printf("\n\033[1;31;40m//======= thread %s yield =======\\\\\033[m\n", currentThread->getName());
+			currentThread->Yield();
+			printf("\n\\\\------- thread %s is running -------//\n", currentThread->getName());
+		}
         last=p;
-    }
+		printf("\n*** thread %s Appended the last item ***\n", currentThread->getName());
+	}
 }
 
 void *DLList::Remove(int *keyPtr){
@@ -114,6 +128,13 @@ void DLList::SortedInsert(void *item, int sortKey){
         while(pi!=NULL&&pi->key<sortKey){
             pi=pi->next;
         }
+		if ((testnum == 40 && strcmp(currentThread->getName(), "main") == 0)||
+			(testnum == 60 && strcmp(currentThread->getName(), "0") == 0))
+		{
+			printf("\n\033[1;31;40m//======= thread %s yield =======\\\\\033[m\n", currentThread->getName());
+			currentThread->Yield();
+			printf("\n\\\\------- thread %s is running -------//\n", currentThread->getName());
+		}
         if(pi==NULL){//put in the last
             DLLElement *p=new DLLElement(item,sortKey);
             p->next=NULL;
@@ -134,6 +155,12 @@ void DLList::SortedInsert(void *item, int sortKey){
                 p->prev=pi->prev;
                 p->next=pi;
                 pi->prev->next=p;
+				if (testnum == 62 && strcmp(currentThread->getName(), "0") == 0)
+				{
+					printf("\n\033[1;31;40m//======= thread %s yield =======\\\\\033[m\n", currentThread->getName());
+					currentThread->Yield();
+					printf("\n\\\\------- thread %s is running -------//\n", currentThread->getName());
+				}
                 pi->prev=p;
             }
         }
@@ -152,13 +179,21 @@ void *DLList::SortedRemove(int sortKey){
         pi=pi->next;
     }
     if(pi==NULL){// do not find
+		printf("Remove failure: CANNOT find!\n");
         return NULL;
     }
+	if (testnum == 41 && strcmp(currentThread->getName(), "0") == 0)
+	{
+		printf("\n\033[1;31;40m//======= thread %s yield =======\\\\\033[m\n", currentThread->getName());
+		currentThread->Yield();
+		printf("\n\\\\------- thread %s is running -------//\n", currentThread->getName());
+	}
     //match
     if(first==last){//only 1 elem
         if(pi==first){
             first=last=NULL;
         }
+		delete pi;
     }
     else{
         if(pi==first){//delete first
@@ -177,6 +212,7 @@ void *DLList::SortedRemove(int sortKey){
             delete pi;
         }
     }
+	printf("*** thread %s Removed %d ***\n", currentThread->getName(), sortKey);
 }
 
 void DLList::Show(){
