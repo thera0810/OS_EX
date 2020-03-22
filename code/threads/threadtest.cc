@@ -345,7 +345,7 @@ ThreadTest()
     }
     case 70://link break
     {
-    // ./nachos -q 30 -T 2  
+    // ./nachos -q 70 -T 2  
         ThreadTest70();
         break;
     }
