@@ -18,7 +18,7 @@
 int testnum = 1;
 int threadnum=2;
 int N=10;
-char threadname[10][5]={0};
+char threadname[10][5]={{0}};
 DLList *ls=new DLList();
 
 
@@ -98,6 +98,7 @@ ThreadTest1()
 
     t->Fork(SimpleThread, 1);
     SimpleThread(0);
+
 }
 
 //---------------------------ThreadTest1---------------------------
@@ -105,28 +106,40 @@ ThreadTest1()
 
 //---------------------------ThreadTest7---------------------------
 
-void SimpleThread7(int which)
+void SimpleThread70(int which)
 {
-    printf("\n------- thread %s is running -------\n",currentThread->getName());
-    dllFunc1(ls,N);
-    dllFunc2(ls,N);
+    printf("\n/------- thread %s is running -------\\\n",currentThread->getName());
+    ls->SortedInsert(NULL,7);
+    printf("\n\\------- thread %s is end     -------/\n",currentThread->getName());
+    ls->Show();
 }
 
-void ThreadTest7()
+void SimpleThread71(int which)
 {
-    DEBUG('t', "Entering ThreadTest2");
+    printf("\n/------- thread %s is running -------\\\n",currentThread->getName());
+    ls->SortedRemove(7);
+    printf("\n\\------- thread %s is end     -------/\n",currentThread->getName());
+}
 
-    for (int i=1;i<threadnum;i++)
+void ThreadTest70()
+{
+    DEBUG('t', "Entering ThreadTest70");
+
+    dllFunc1(ls, N);
+
+    for (int i=0;i<threadnum;++i)
     {
-        char threadname[10]={0};
-        sprintf(threadname,"%d",i);
-
-        Thread *t = new Thread(threadname);
-        
-        t->Fork(SimpleThread7, i);
+        sprintf(threadname[i],"%d",i);
+        Thread *t = new Thread(threadname[i]);
+        if (i==0)
+        {
+        	t->Fork(SimpleThread70, 1);
+        }
+        else if (i==1)
+        {
+        	t->Fork(SimpleThread71, 1);
+        }
     }
-
-    SimpleThread7(0);
 }
 
 //---------------------------ThreadTest7---------------------------
@@ -384,10 +397,10 @@ ThreadTest()
 	}
 	case 70:
     {
-        ThreadTest7();
+    	// .nachos -q 70 -T 2 -N 10
+        ThreadTest70();
         break;
     }
-
 
     default:
     {

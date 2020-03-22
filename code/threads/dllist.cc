@@ -115,7 +115,7 @@ void DLList::SortedInsert(void *item, int sortKey){
         first=p;
         last=p;
 
-        if (testnum==70 && strcmp(currentThread->getName(),"main")==0)
+        if (testnum==70 && strcmp(currentThread->getName(),"0")==0)
         {
             printf("\n\033[1;31;40m//======= thread %s yield =======\\\\\033[m\n",currentThread->getName());
             currentThread->Yield();
@@ -124,6 +124,9 @@ void DLList::SortedInsert(void *item, int sortKey){
 
     }
     else{// not empty
+
+        printf("*** thread %s insert %d ***\n",currentThread->getName(),sortKey);
+
         DLLElement *pi=first;
         while(pi!=NULL&&pi->key<sortKey){
             pi=pi->next;
@@ -153,6 +156,12 @@ void DLList::SortedInsert(void *item, int sortKey){
             else{//put in the middle
                 DLLElement *p=new DLLElement(item,sortKey);
                 p->prev=pi->prev;
+                if (testnum == 70 && strcmp(currentThread->getName(), "0") == 0)
+                {
+                    printf("\n\033[1;31;40m//======= thread %s yield =======\\\\\033[m\n", currentThread->getName());
+                    currentThread->Yield();
+                    printf("\n\\\\------- thread %s is running -------//\n", currentThread->getName());
+                }
                 p->next=pi;
                 pi->prev->next=p;
 				if (testnum == 62 && strcmp(currentThread->getName(), "0") == 0)
@@ -210,6 +219,14 @@ void *DLList::SortedRemove(int sortKey){
             pi->next->prev=pi->prev;
             pi->prev->next=pi->next;
             delete pi;
+            /*
+            if (testnum == 70 && strcmp(currentThread->getName(), "1") == 0)
+            {
+                printf("\n\033[1;31;40m//======= thread %s yield =======\\\\\033[m\n", currentThread->getName());
+                currentThread->Yield();
+                printf("\n\\\\------- thread %s is running -------//\n", currentThread->getName());
+            }
+            */
         }
     }
 	printf("*** thread %s Removed %d ***\n", currentThread->getName(), sortKey);
