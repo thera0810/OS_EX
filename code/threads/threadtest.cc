@@ -63,7 +63,7 @@ ThreadTest1()
 
 //---------------------------ThreadTest1---------------------------
 
-//---------------------------ThreadTest20---------------------------
+//---------------------------ThreadTest2*---------------------------
 void SimpleThreadFunc2(int n)
 {
     printf("\n/------- thread %s is running -------\\\n",currentThread->getName());
@@ -82,10 +82,6 @@ void ThreadTest20()
         t->Fork(SimpleThreadFunc2, 3);
     }
 }
-
-//---------------------------ThreadTest20---------------------------
-
-//---------------------------ThreadTest21---------------------------
 void ThreadTest21()
 {
     DEBUG('t', "Entering ThreadTest2");
@@ -97,13 +93,10 @@ void ThreadTest21()
         t->Fork(SimpleThreadFunc2, 1);
     }
 }
-//---------------------------ThreadTest21---------------------------
+//---------------------------ThreadTest2*---------------------------
 
 
-
-
-
-//---------------------------ThreadTest7---------------------------
+//---------------------------ThreadTest7*---------------------------
 
 void SimpleThread70(int which)
 {
@@ -132,16 +125,18 @@ void ThreadTest70()
         Thread *t = new Thread(threadname[i]);
         if (i==0)
         {
-        	t->Fork(SimpleThread70, 1);
+            t->Fork(SimpleThread70, 1);
         }
         else if (i==1)
         {
-        	t->Fork(SimpleThread71, 1);
+            t->Fork(SimpleThread71, 1);
         }
     }
 }
 
-//---------------------------ThreadTest7---------------------------
+//---------------------------ThreadTest7*---------------------------
+
+
 
 //---------------------------ThreadTest30---------------------------
 //***********************************************************************
@@ -315,6 +310,7 @@ void ThreadTest62()
 //***********************************************************************
 //***********************************************************************
 
+
 //----------------------------------------------------------------------
 // ThreadTest
 // 	Invoke a test routine.
@@ -345,6 +341,12 @@ ThreadTest()
     {
         //./nachos -q 21 -T 3
         ThreadTest21();
+        break;
+    }
+    case 70://link break
+    {
+    // ./nachos -q 30 -T 2  
+        ThreadTest70();
         break;
     }
 
@@ -394,12 +396,6 @@ ThreadTest()
 		ThreadTest62();
 		break;
 	}
-	case 70:
-    {
-    	// .nachos -q 70 -T 2 -N 10
-        ThreadTest70();
-        break;
-    }
 
     default:
     {

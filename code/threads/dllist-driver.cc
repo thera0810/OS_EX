@@ -16,7 +16,7 @@ void dllFunc1(DLList *list, int N){
     for(int i=0;i<N;++i){
         //int k=rand()%(10*N);
         list->SortedInsert(NULL,i);
-        //printf("*** thread %s insert %d ***\n",currentThread->getName(),i);
+        // printf("*** thread %s insert %d ***\n",currentThread->getName(),i);
     }
     list->Show();
     printf("\n");
@@ -37,7 +37,7 @@ void dllFunc2(DLList *list, int N){
             printf("\n\\\\------- thread %s is running -------//\n",currentThread->getName());
         }
 
-        //printf("*** thread %s removed %d ***\n",currentThread->getName(),k);
+        printf("*** thread %s removed %d ***\n",currentThread->getName(),k);
     }
     list->Show();
     printf("\n");
