@@ -111,6 +111,8 @@ bool DLList::IsEmpty(){
 
 void DLList::SortedInsert(void *item, int sortKey){
     if(IsEmpty()){
+        printf("*** thread %s insert %d ***\n",currentThread->getName(),sortKey);
+        
         DLLElement *p= new DLLElement(item,sortKey);
         first=p;
         last=p;
@@ -124,7 +126,6 @@ void DLList::SortedInsert(void *item, int sortKey){
 
     }
     else{// not empty
-
         printf("*** thread %s insert %d ***\n",currentThread->getName(),sortKey);
 
         DLLElement *pi=first;

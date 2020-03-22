@@ -21,7 +21,47 @@ int N=10;
 char threadname[10][5]={{0}};
 DLList *ls=new DLList();
 
+//---------------------------ThreadTest1---------------------------
 
+//----------------------------------------------------------------------
+// SimpleThread
+//  Loop 5 times, yielding the CPU to another ready thread 
+//  each iteration.
+//
+//  "which" is simply a number identifying the thread, for debugging
+//  purposes.
+//----------------------------------------------------------------------
+
+void
+SimpleThread(int which)
+{
+    int num;
+    
+    for (num = 0; num < 5; num++) {
+        printf("*** thread %d looped %d times\n", which, num);
+        currentThread->Yield();
+   }
+}
+
+//----------------------------------------------------------------------
+// ThreadTest1
+//  Set up a ping-pong between two threads, by forking a thread 
+//  to call SimpleThread, and then calling SimpleThread ourselves.
+//----------------------------------------------------------------------
+
+void
+ThreadTest1()
+{
+    DEBUG('t', "Entering ThreadTest1");
+
+    Thread *t = new Thread("forked thread");
+
+    t->Fork(SimpleThread, 1);
+    SimpleThread(0);
+
+}
+
+//---------------------------ThreadTest1---------------------------
 
 //---------------------------ThreadTest20---------------------------
 void SimpleThreadFunc2(int n)
@@ -60,48 +100,7 @@ void ThreadTest21()
 //---------------------------ThreadTest21---------------------------
 
 
-//---------------------------ThreadTest1---------------------------
 
-
-//----------------------------------------------------------------------
-// SimpleThread
-// 	Loop 5 times, yielding the CPU to another ready thread 
-//	each iteration.
-//
-//	"which" is simply a number identifying the thread, for debugging
-//	purposes.
-//----------------------------------------------------------------------
-
-void
-SimpleThread(int which)
-{
-    int num;
-    
-    for (num = 0; num < 5; num++) {
-        printf("*** thread %d looped %d times\n", which, num);
-        currentThread->Yield();
-   }
-}
-
-//----------------------------------------------------------------------
-// ThreadTest1
-// 	Set up a ping-pong between two threads, by forking a thread 
-//	to call SimpleThread, and then calling SimpleThread ourselves.
-//----------------------------------------------------------------------
-
-void
-ThreadTest1()
-{
-    DEBUG('t', "Entering ThreadTest1");
-
-    Thread *t = new Thread("forked thread");
-
-    t->Fork(SimpleThread, 1);
-    SimpleThread(0);
-
-}
-
-//---------------------------ThreadTest1---------------------------
 
 
 //---------------------------ThreadTest7---------------------------
@@ -227,8 +226,8 @@ void ThreadTest41()
 {
 	DEBUG('t', "Entering ThreadTest2");
 	dllFunc1(ls, 2);
-	//dllFunc1(ls, 3);//–Èƒ‚ª˙…œ≤‚ ‘3∏ˆ≤≈ª·±®¥Ì£¨∑Ò‘Ú≤ª±®¥Ì
-	for (int i = 0; i < threadnum; ++i)
+	//dllFunc1(ls, 3);//???????????≈ª·±®?????Ú≤ª±???
+    for (int i = 0; i < threadnum; ++i)
 	{
 		sprintf(threadname[i], "%d", i);
 		Thread* t = new Thread(threadname[i]);
@@ -280,7 +279,7 @@ void ThreadTest81()
 void SimpleThreadFunc62(int n)
 {
 	printf("\n/------- thread %s is running -------\\\n", currentThread->getName());
-	printf("\n*** thread %s ready to Insert %d elems to the list ***\n", currentThread->getName(), n);
+	printf("\n*** thread %s ready to Insert %d to the list ***\n", currentThread->getName(), n);
 	ls->SortedInsert(NULL, n);
 	ls->Show();
 	printf("\n\\------- thread %s is end     -------/\n", currentThread->getName());
@@ -336,20 +335,20 @@ ThreadTest()
         break;
     }
 	
-    case 20:
+    case 20://dml: romove in an unexpected order
     {
         //./nachos -q 20 -T 3
         ThreadTest20();
         break;
     }
-    case 21:
+    case 21://dml remove the same element
     {
         //./nachos -q 21 -T 3
         ThreadTest21();
         break;
     }
 
-	case 30://operate error£®remove failure£©
+	case 30://operate error??remove failure??
 		{
 		// ./nachos -q 30 -T 2	
 		ThreadTest30();
