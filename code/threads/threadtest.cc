@@ -145,6 +145,7 @@ void SimpleThreadFunc31(int n)
 {
 	printf("\n/------- thread %s is running -------\\\n", currentThread->getName());
 	ls->Prepend(NULL);
+	printf("\n\\\\------- thread %s Prepended the first item -------//\n", currentThread->getName());
 	ls->Show();
 	printf("\n\033[1;31;40m//======= thread %s yield =======\\\\\033[m\n", currentThread->getName());
 	currentThread->Yield();
@@ -165,13 +166,14 @@ void ThreadTest30()
 	DEBUG('t', "Entering ThreadTest2");
 	//dllFunc1(ls, N);
 	dllFunc1(ls, 0);
-	for (int i = 1; i < threadnum; ++i)
+	for (int i = 0; i < threadnum; ++i)
 	{
 		sprintf(threadname[i], "%d", i);
 		Thread* t = new Thread(threadname[i]);
-		t->Fork(SimpleThreadFunc33, 1);
+		if(i==0) t->Fork(SimpleThreadFunc31,0);
+		else t->Fork(SimpleThreadFunc33, 1);
 	}
-	SimpleThreadFunc31(0);
+	
 }
 
 //---------------------------ThreadTest30---------------------------
@@ -204,13 +206,13 @@ void ThreadTest40()
 {
 	DEBUG('t', "Entering ThreadTest2");
 	dllFunc1(ls, 1);
-	for (int i = 1; i < threadnum; ++i)
+	for (int i = 0; i < threadnum; ++i)
 	{
 		sprintf(threadname[i], "%d", i);
 		Thread* t = new Thread(threadname[i]);
-		t->Fork(SimpleThreadFunc45, 1);
+		if(i==0) t->Fork(SimpleThreadFunc44, 0);
+		else t->Fork(SimpleThreadFunc45, 1);
 	}
-	SimpleThreadFunc44(0);
 }
 
 //---------------------------ThreadTest40---------------------------
@@ -337,63 +339,68 @@ ThreadTest()
         ThreadTest20();
         break;
     }
-    case 21://dml remove the same element
-    {
-        //./nachos -q 21 -T 3
-        ThreadTest21();
-        break;
-    }
-    case 70://link break
-    {
-    // ./nachos -q 70 -T 2  
-        ThreadTest70();
-        break;
-    }
 
-	case 30://operate error??remove failure??
+	case 30://operate error??remove failure?? lxh
 		{
 		// ./nachos -q 30 -T 2	
 		ThreadTest30();
 			break;
 		}
 
-	case 40://core dumped
+	case 60://disorder lxh
 	{
-		// ./nachos -q 40 -T 2	
-		ThreadTest40();
+		// ./nachos -q 60 -T 2	
+		ThreadTest60();
 		break;
 	}
 
-	case 41://unknown error
+    case 70://xht: link break
 	{
-		// ./nachos -q 41 -T 2	
-		ThreadTest41();
+		// ./nachos -q 70 -T 2  
+		ThreadTest70();
 		break;
 	}
 
-	case 80://repeated(pointer error)
+	case 80://repeated(pointer error) lxh
 	{
 		// ./nachos -q 80 -T 2	
 		ThreadTest80();
 		break;
 	}
 
-	case 81://overwrite(pointer error)
+	case 81://overwrite(pointer error) lxh
 	{
 		// ./nachos -q 81 -T 2	
 		ThreadTest81();
 		break;
 	}
-	case 60://disorder
-	{
-		// ./nachos -q 60 -T 2	
-		ThreadTest60();
-		break;
-	}
-	case 62://overwrite
+
+	case 62://overwrite lxh
 	{
 		// ./nachos -q 62 -T 2	
 		ThreadTest62();
+		break;
+	}
+    
+
+	case 40://core dumped lxh
+	{
+		// ./nachos -q 40 -T 2	
+		ThreadTest40();
+		break;
+	}
+
+    case 21://dml remove the same element
+    {
+        //./nachos -q 21 -T 3
+        ThreadTest21();
+        break;
+    }  
+
+	case 41://unknown error
+	{
+		// ./nachos -q 41 -T 2	
+		ThreadTest41();
 		break;
 	}
 

@@ -133,7 +133,7 @@ void DLList::SortedInsert(void *item, int sortKey){
             pi=pi->next;
         }
 		printf("*** thread %s located %d ***\n", currentThread->getName(), sortKey);
-		if ((testnum == 40 && strcmp(currentThread->getName(), "main") == 0)||
+		if ((testnum == 40 && strcmp(currentThread->getName(), "0") == 0)||
 			(testnum == 60 && strcmp(currentThread->getName(), "0") == 0))
 		{
 			printf("\n\033[1;31;40m//======= thread %s yield =======\\\\\033[m\n", currentThread->getName());
