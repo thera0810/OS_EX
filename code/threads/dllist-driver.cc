@@ -11,7 +11,7 @@ extern int testnum;
 //Generate random N elems and insert them to a dllist
 void dllFunc1(DLList *list, int N){
     //srand((unsigned)time(NULL)); 
-    printf("\n*** thread %s ready to Insert %d elems to the list ***\n",currentThread->getName(),N);
+    printf("\n*** thread %s is ready to Insert %d elems to the list ***\n",currentThread->getName(),N);
     // printf("\nInsert %d elems in the list:\n",N);
     for(int i=0;i<N;++i){
         //int k=rand()%(10*N);
@@ -24,7 +24,7 @@ void dllFunc1(DLList *list, int N){
 //removes N items starting from the head of the list 
 //and prints out the removed items to the console
 void dllFunc2(DLList *list, int N){
-    printf("\n*** thread %s ready to remove the first %d elems from the list ***\n",currentThread->getName(),N);
+    printf("\n*** thread %s is ready to remove the first %d elems from the list ***\n",currentThread->getName(),N);
     int oldN=N;
     //while(!(list->IsEmpty())&&(N--)){
 	while (N--) {
