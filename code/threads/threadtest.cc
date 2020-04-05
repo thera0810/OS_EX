@@ -11,8 +11,9 @@
 
 #include "copyright.h"
 #include "system.h"
-#include "../dllist/dllist.h"
+#include "dllist.h"
 #include <stdio.h>
+#include "synch.h"
 
 // testnum is set in main.cc
 int testnum = 1;
@@ -20,6 +21,9 @@ int threadnum=2;
 int N=10;
 char threadname[10][5]={{0}};
 DLList *ls=new DLList();
+Lock *lock = new Lock("operate list lock");
+Condition *notEmpty=new Condition("notEmpty condition");
+
 
 //---------------------------ThreadTest1---------------------------
 
@@ -67,7 +71,9 @@ ThreadTest1()
 void SimpleThreadFunc2(int n)
 {
     printf("\n/------- thread %s is running -------\\\n",currentThread->getName());
+    lock->Acquire();
     dllFunc2(ls,n);
+    lock->Release();
     printf("\n\\------- thread %s is end     -------/\n",currentThread->getName());
 }
 
@@ -92,6 +98,44 @@ void ThreadTest21()
         Thread *t = new Thread(threadname[i]);
         t->Fork(SimpleThreadFunc2, 1);
     }
+}
+
+void SimpleThreadPut(int n)
+{
+    printf("\n/------- thread %s is running -------\\\n",currentThread->getName());
+    lock->Acquire();
+    // printf("thread %s get lock\n",currentThread->getName());
+    dllFunc1(ls,n);
+    notEmpty->Broadcast(lock);
+    // printf("thread %s broadcast\n",currentThread->getName() );
+    lock->Release();
+    printf("\n\\------- thread %s is end     -------/\n",currentThread->getName());
+}
+void SimpleThreadGet(int n)
+{
+    printf("\n/------- thread %s is running -------\\\n",currentThread->getName());
+    lock->Acquire();
+    // printf("thread %s get lock\n",currentThread->getName());
+    notEmpty->Wait(lock);
+    // printf("thread %s wake up\n",currentThread->getName());
+    dllFunc2(ls,n);
+    if(!ls->IsEmpty())
+        notEmpty->Broadcast(lock);
+    lock->Release();
+    printf("\n\\------- thread %s is end     -------/\n",currentThread->getName());
+}
+void ThreadTest22()
+{
+    DEBUG('t', "Entering ThreadTest2");
+    Thread *t;
+    t = new Thread("0");
+    t->Fork(SimpleThreadGet,1);
+    t = new Thread("1");
+    t->Fork(SimpleThreadGet,1);
+    // t = new Thread("11");
+    // t->Fork(SimpleThreadGet,1);
+    t = new Thread("2");
+    t->Fork(SimpleThreadPut,2);
 }
 //---------------------------ThreadTest2*---------------------------
 
@@ -340,6 +384,20 @@ ThreadTest()
         break;
     }
 
+    case 21://dml remove the same element
+    {
+        //./nachos -q 21 -T 3
+        ThreadTest21();
+        break;
+    }  
+
+    case 22://dml test cond for synchronization
+    {
+        //./nachos -q 22 -T 3
+        ThreadTest22();
+        break;
+    }  
+
 	case 30://operate error??remove failure?? lxh
 		{
 		// ./nachos -q 30 -T 2	
@@ -389,13 +447,6 @@ ThreadTest()
 		ThreadTest40();
 		break;
 	}
-
-    case 21://dml remove the same element
-    {
-        //./nachos -q 21 -T 3
-        ThreadTest21();
-        break;
-    }  
 
 	case 41://unknown error
 	{

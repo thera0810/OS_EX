@@ -115,7 +115,7 @@ void DLList::SortedInsert(void *item, int sortKey){
         DLLElement *p= new DLLElement(item,sortKey);
         first=p;
         last=p;
-		printf("*** thread %s inserted %d ***\n",currentThread->getName(),sortKey);
+		printf("*** thread %s insert %d ***\n",currentThread->getName(),sortKey);
         
 
         if (testnum==70 && strcmp(currentThread->getName(),"0")==0)
@@ -132,7 +132,7 @@ void DLList::SortedInsert(void *item, int sortKey){
         while(pi!=NULL&&pi->key<sortKey){
             pi=pi->next;
         }
-		printf("*** thread %s located %d ***\n", currentThread->getName(), sortKey);
+		// printf("*** thread %s located %d ***\n", currentThread->getName(), sortKey);
 		if ((testnum == 40 && strcmp(currentThread->getName(), "0") == 0)||
 			(testnum == 60 && strcmp(currentThread->getName(), "0") == 0))
 		{

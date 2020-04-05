@@ -28,7 +28,7 @@ void dllFunc2(DLList *list, int N){
     int oldN=N;
     //while(!(list->IsEmpty())&&(N--)){
 	while (N--) {
-        int k;
+        int k=404;
         void *item=list->Remove(&k);
 
         if (testnum==20&&N==oldN-1)//when removed the first elem, yield
@@ -37,9 +37,11 @@ void dllFunc2(DLList *list, int N){
             currentThread->Yield();
             printf("\n\\\\------- thread %s is running -------//\n",currentThread->getName());
         }
-		if (item != NULL) {
-			printf("*** thread %s removed %d ***\n", currentThread->getName(), k);
-		}
+        if(k!=404)
+            printf("*** thread %s removed %d ***\n", currentThread->getName(), k);
+		// if (item != NULL) {
+		// 	printf("*** thread %s removed %d ***\n", currentThread->getName(), k);
+		// }
     }
     list->Show();
     printf("\n");
