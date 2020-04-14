@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "synch.h"
 
 
 class DLLElement {
@@ -29,9 +30,13 @@ public:
                                         // return NULL if no such item exists
     //print list
     void Show();
+
 private:
     DLLElement *first; // head of the list, NULL if empty
     DLLElement *last;  // last element of the list, NULL if empty
+    List *list;         // the unsynchronized list
+    Lock *lock;         // enforce mutual exclusive access to the list
+    Condition *listEmpty;   // wait in Remove if the list is empty
 };
 
 //Generate random N elems and insert them to a dllist

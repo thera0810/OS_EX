@@ -21,9 +21,6 @@ int threadnum=2;
 int N=10;
 char threadname[10][5]={{0}};
 DLList *ls=new DLList();
-Lock *lock = new Lock("operate list lock");
-Condition *notEmpty=new Condition("notEmpty condition");
-
 
 //---------------------------ThreadTest1---------------------------
 
@@ -65,270 +62,71 @@ ThreadTest1()
 
 }
 
-//---------------------------ThreadTest1---------------------------
+//---------------------------ThreadTest2---------------------------
 
-//---------------------------ThreadTest2*---------------------------
-void SimpleThreadFunc2(int n)
+void SimpleThread20(int which)
 {
-    printf("\n/------- thread %s is running -------\\\n",currentThread->getName());
-    lock->Acquire();
-    dllFunc2(ls,n);
-    lock->Release();
-    printf("\n\\------- thread %s is end     -------/\n",currentThread->getName());
-}
-
-void ThreadTest20()
-{
-    DEBUG('t', "Entering ThreadTest2");
-    dllFunc1(ls,N);
-    for (int i=0;i<threadnum;++i)
-    {
-        sprintf(threadname[i],"%d",i);
-        Thread *t = new Thread(threadname[i]);
-        t->Fork(SimpleThreadFunc2, 3);
-    }
-}
-void ThreadTest21()
-{
-    DEBUG('t', "Entering ThreadTest2");
-    dllFunc1(ls,N);
-    for (int i=0;i<threadnum;++i)
-    {
-        sprintf(threadname[i],"%d",i);
-        Thread *t = new Thread(threadname[i]);
-        t->Fork(SimpleThreadFunc2, 1);
-    }
-}
-
-void SimpleThreadPut(int n)
-{
-    printf("\n/------- thread %s is running -------\\\n",currentThread->getName());
-    lock->Acquire();
-    // printf("thread %s get lock\n",currentThread->getName());
-    dllFunc1(ls,n);
-    notEmpty->Broadcast(lock);
-    // printf("thread %s broadcast\n",currentThread->getName() );
-    lock->Release();
-    printf("\n\\------- thread %s is end     -------/\n",currentThread->getName());
-}
-void SimpleThreadGet(int n)
-{
-    printf("\n/------- thread %s is running -------\\\n",currentThread->getName());
-    lock->Acquire();
-    // printf("thread %s get lock\n",currentThread->getName());
-    notEmpty->Wait(lock);
-    // printf("thread %s wake up\n",currentThread->getName());
-    dllFunc2(ls,n);
-    if(!ls->IsEmpty())
-        notEmpty->Broadcast(lock);
-    lock->Release();
-    printf("\n\\------- thread %s is end     -------/\n",currentThread->getName());
-}
-void ThreadTest22()
-{
-    DEBUG('t', "Entering ThreadTest2");
-    Thread *t;
-    t = new Thread("0");
-    t->Fork(SimpleThreadGet,1);
-    t = new Thread("1");
-    t->Fork(SimpleThreadGet,1);
-    // t = new Thread("11");
-    // t->Fork(SimpleThreadGet,1);
-    t = new Thread("2");
-    t->Fork(SimpleThreadPut,2);
-}
-//---------------------------ThreadTest2*---------------------------
-
-
-//---------------------------ThreadTest7*---------------------------
-
-void SimpleThread70(int which)
-{
-    printf("\n/------- thread %s is running -------\\\n",currentThread->getName());
     ls->SortedInsert(NULL,7);
-    printf("\n\\------- thread %s is end     -------/\n",currentThread->getName());
     ls->Show();
 }
 
-void SimpleThread71(int which)
+void SimpleThread21(int which)
 {
-    printf("\n/------- thread %s is running -------\\\n",currentThread->getName());
     ls->SortedRemove(7);
-    printf("\n\\------- thread %s is end     -------/\n",currentThread->getName());
+    ls->Show();
 }
 
-void ThreadTest70()
+void ThreadTest2()
 {
-    DEBUG('t', "Entering ThreadTest70");
+    DEBUG('t', "Entering ThreadTest2");
 
     dllFunc1(ls, N);
-
     for (int i=0;i<threadnum;++i)
     {
         sprintf(threadname[i],"%d",i);
         Thread *t = new Thread(threadname[i]);
         if (i==0)
         {
-            t->Fork(SimpleThread70, 1);
+            t->Fork(SimpleThread20, 1);
         }
         else if (i==1)
         {
-            t->Fork(SimpleThread71, 1);
+            t->Fork(SimpleThread21, 1);
         }
     }
 }
 
-//---------------------------ThreadTest7*---------------------------
 
+//---------------------------ThreadTest3---------------------------
 
-
-//---------------------------ThreadTest30---------------------------
-//***********************************************************************
-//***********************************************************************
-void SimpleThreadFunc31(int n)
+void SimpleThreadFunc3(int n)
 {
-	printf("\n/------- thread %s is running -------\\\n", currentThread->getName());
-	ls->Prepend(NULL);
-	printf("\n\\\\------- thread %s Prepended the first item -------//\n", currentThread->getName());
-	ls->Show();
-	printf("\n\033[1;31;40m//======= thread %s yield =======\\\\\033[m\n", currentThread->getName());
-	currentThread->Yield();
-	printf("\n\\\\------- thread %s is running -------//\n", currentThread->getName());
-	dllFunc2(ls, 1);
-	printf("\n\\------- thread %s is end     -------/\n", currentThread->getName());
-}
-
-void SimpleThreadFunc33(int n)
-{
-	printf("\n/------- thread %s is running -------\\\n", currentThread->getName());
-	dllFunc2(ls, 1);
-	printf("\n\\------- thread %s is end     -------/\n", currentThread->getName());
-}
-
-void ThreadTest30()
-{
-	DEBUG('t', "Entering ThreadTest2");
-	//dllFunc1(ls, N);
-	dllFunc1(ls, 0);
-	for (int i = 0; i < threadnum; ++i)
-	{
-		sprintf(threadname[i], "%d", i);
-		Thread* t = new Thread(threadname[i]);
-		if(i==0) t->Fork(SimpleThreadFunc31,0);
-		else t->Fork(SimpleThreadFunc33, 1);
-	}
-	
-}
-
-//---------------------------ThreadTest30---------------------------
-
-
-//---------------------------ThreadTest40---------------------------
-
-void SimpleThreadFunc44(int n)
-{
-	printf("\n/------- thread %s is running -------\\\n", currentThread->getName());
-	int i = 0;
-	printf("\n*** thread %s ready to Insert %d to the list ***\n", currentThread->getName(), i);
-	ls->SortedInsert(NULL, i);
-	printf("*** thread %s insert %d ***\n", currentThread->getName(), i);
-	ls->Show();
-	printf("\n\\------- thread %s is end     -------/\n", currentThread->getName());
-}
-
-void SimpleThreadFunc45(int n)
-{
-	printf("\n/------- thread %s is running -------\\\n", currentThread->getName());
-	int i = 0;
-	printf("\n*** thread %s ready to Removed %d to the list ***\n", currentThread->getName(), i);
-	ls->SortedRemove(i);
-	ls->Show();
-	printf("\n\\------- thread %s is end     -------/\n", currentThread->getName());
-}
-
-void ThreadTest40()
-{
-	DEBUG('t', "Entering ThreadTest2");
-	dllFunc1(ls, 1);
-	for (int i = 0; i < threadnum; ++i)
-	{
-		sprintf(threadname[i], "%d", i);
-		Thread* t = new Thread(threadname[i]);
-		if(i==0) t->Fork(SimpleThreadFunc44, 0);
-		else t->Fork(SimpleThreadFunc45, 1);
-	}
-}
-
-//---------------------------ThreadTest40---------------------------
-
-//---------------------------ThreadTest41---------------------------
-
-void ThreadTest41()
-{
-	DEBUG('t', "Entering ThreadTest2");
-	dllFunc1(ls, 2);
-	//dllFunc1(ls, 3);//???????????Żᱨ?????򲻱???
-    for (int i = 0; i < threadnum; ++i)
-	{
-		sprintf(threadname[i], "%d", i);
-		Thread* t = new Thread(threadname[i]);
-		t->Fork(SimpleThreadFunc45, 1);
-	}
-}
-
-//---------------------------ThreadTest41---------------------------
-
-//---------------------------ThreadTest8---------------------------
-//***********************************************************************
-//***********************************************************************
-
-void SimpleThreadFunc8(int n)
-{
-	printf("\n/------- thread %s is running -------\\\n", currentThread->getName());
-	printf("\n*** thread %s ready to Append the last item to the list ***\n", currentThread->getName());
 	ls->Append(NULL);
 	ls->Show();
-	printf("\n\\------- thread %s is end     -------/\n", currentThread->getName());
 }
-
-void ThreadTest80()
+void ThreadTest3()
 {
-	DEBUG('t', "Entering ThreadTest2");
+	DEBUG('t', "Entering ThreadTest3");
 	dllFunc1(ls, 3);
 	for (int i = 0; i < threadnum; ++i)
 	{
 		sprintf(threadname[i], "%d", i);
 		Thread* t = new Thread(threadname[i]);
-		t->Fork(SimpleThreadFunc8, 1);
+		t->Fork(SimpleThreadFunc3, i);
 	}
 }
-void ThreadTest81()
-{
-	DEBUG('t', "Entering ThreadTest2");
-	dllFunc1(ls, 3);
-	for (int i = 0; i < threadnum; ++i)
-	{
-		sprintf(threadname[i], "%d", i);
-		Thread* t = new Thread(threadname[i]);
-		t->Fork(SimpleThreadFunc8, i);
-	}
-}
-//---------------------------ThreadTest8---------------------------
 
+//---------------------------ThreadTest4---------------------------
 
-//---------------------------ThreadTest60---------------------------
-void SimpleThreadFunc62(int n)
+void SimpleThreadFunc4(int n)
 {
-	printf("\n/------- thread %s is running -------\\\n", currentThread->getName());
-	printf("\n*** thread %s ready to Insert %d to the list ***\n", currentThread->getName(), n);
 	ls->SortedInsert(NULL, n);
 	ls->Show();
-	printf("\n\\------- thread %s is end     -------/\n", currentThread->getName());
 }
 
-void ThreadTest60()
+void ThreadTest4()
 {
-	DEBUG('t', "Entering ThreadTest2");
+	DEBUG('t', "Entering ThreadTest4");
 	ls->SortedInsert(NULL, 5);
 	ls->SortedInsert(NULL, 15);
 	ls->Show();
@@ -336,26 +134,9 @@ void ThreadTest60()
 	{
 		sprintf(threadname[i], "%d", i);
 		Thread* t = new Thread(threadname[i]);
-		t->Fork(SimpleThreadFunc62, i+10);
+		t->Fork(SimpleThreadFunc4, i+10);
 	}
 }
-void ThreadTest62()
-{
-	DEBUG('t', "Entering ThreadTest2");
-	ls->SortedInsert(NULL, 4);
-	ls->SortedInsert(NULL, 15);
-	ls->Show();
-	for (int i = 0; i < threadnum; ++i)
-	{
-		sprintf(threadname[i], "%d", i);
-		Thread* t = new Thread(threadname[i]);
-		t->Fork(SimpleThreadFunc62, i + 10);
-	}
-}
-//---------------------------ThreadTest60---------------------------
-//***********************************************************************
-//***********************************************************************
-
 
 //----------------------------------------------------------------------
 // ThreadTest
@@ -376,91 +157,33 @@ ThreadTest()
         ThreadTest1();
         break;
     }
-	
-    case 20://dml: romove in an unexpected order
+
+    case 2://xht: link break 70
     {
-        //./nachos -q 20 -T 3
-        ThreadTest20();
+        ThreadTest2();
         break;
     }
 
-    case 21://dml remove the same element
-    {
-        //./nachos -q 21 -T 3
-        ThreadTest21();
-        break;
-    }  
-
-    case 22://dml test cond for synchronization
-    {
-        //./nachos -q 22 -T 3
-        ThreadTest22();
-        break;
-    }  
-
-	case 30://operate error??remove failure?? lxh
-		{
-		// ./nachos -q 30 -T 2	
-		ThreadTest30();
-			break;
-		}
-
-	case 60://disorder lxh
-	{
-		// ./nachos -q 60 -T 2	
-		ThreadTest60();
-		break;
-	}
-
-    case 70://xht: link break
-	{
-		// ./nachos -q 70 -T 2  
-		ThreadTest70();
-		break;
-	}
-
-	case 80://repeated(pointer error) lxh
-	{
-		// ./nachos -q 80 -T 2	
-		ThreadTest80();
-		break;
-	}
-
-	case 81://overwrite(pointer error) lxh
+	case 3://overwrite(pointer error) lxh 81
 	{
 		// ./nachos -q 81 -T 2	
-		ThreadTest81();
+		ThreadTest3();
 		break;
 	}
 
-	case 62://overwrite lxh
-	{
-		// ./nachos -q 62 -T 2	
-		ThreadTest62();
-		break;
-	}
-    
-
-	case 40://core dumped lxh
-	{
-		// ./nachos -q 40 -T 2	
-		ThreadTest40();
-		break;
-	}
-
-	case 41://unknown error
-	{
-		// ./nachos -q 41 -T 2	
-		ThreadTest41();
-		break;
-	}
+    case 4:// insert disorder lxh 60
+    {
+        // ./nachos -q 60 -T 2  
+        ThreadTest4();
+        break;
+    }
 
     default:
     {
         printf("No test specified.\n");
         break;
     }
-	
+
     }
 }
 

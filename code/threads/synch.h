@@ -81,7 +81,7 @@ class Lock {
   private:
     char* name;             // for debugging
     Semaphore *semLock;
-    char* heldByThread;
+    Thread * heldByThread;
     // plus some other stuff you'll need to define
 };
 

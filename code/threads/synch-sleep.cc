@@ -1,8 +1,8 @@
 // synch.cc 
-//	Routines for synchronizing threads.  Three kinds of
-//	synchronization routines are defined here: semaphores, locks 
-//   	and condition variables (the implementation of the last two
-//	are left to the reader).
+//  Routines for synchronizing threads.  Three kinds of
+//  synchronization routines are defined here: semaphores, locks 
+//      and condition variables (the implementation of the last two
+//  are left to the reader).
 //
 // Any implementation of a synchronization routine needs some
 // primitive atomic operation.  We assume Nachos is running on
@@ -27,10 +27,10 @@
 
 //----------------------------------------------------------------------
 // Semaphore::Semaphore
-// 	Initialize a semaphore, so that it can be used for synchronization.
+//  Initialize a semaphore, so that it can be used for synchronization.
 //
-//	"debugName" is an arbitrary name, useful for debugging.
-//	"initialValue" is the initial value of the semaphore.
+//  "debugName" is an arbitrary name, useful for debugging.
+//  "initialValue" is the initial value of the semaphore.
 //----------------------------------------------------------------------
 
 Semaphore::Semaphore(char* debugName, int initialValue)
@@ -42,8 +42,8 @@ Semaphore::Semaphore(char* debugName, int initialValue)
 
 //----------------------------------------------------------------------
 // Semaphore::Semaphore
-// 	De-allocate semaphore, when no longer needed.  Assume no one
-//	is still waiting on the semaphore!
+//  De-allocate semaphore, when no longer needed.  Assume no one
+//  is still waiting on the semaphore!
 //----------------------------------------------------------------------
 
 Semaphore::~Semaphore()
@@ -53,35 +53,35 @@ Semaphore::~Semaphore()
 
 //----------------------------------------------------------------------
 // Semaphore::P
-// 	Wait until semaphore value > 0, then decrement.  Checking the
-//	value and decrementing must be done atomically, so we
-//	need to disable interrupts before checking the value.
+//  Wait until semaphore value > 0, then decrement.  Checking the
+//  value and decrementing must be done atomically, so we
+//  need to disable interrupts before checking the value.
 //
-//	Note that Thread::Sleep assumes that interrupts are disabled
-//	when it is called.
+//  Note that Thread::Sleep assumes that interrupts are disabled
+//  when it is called.
 //----------------------------------------------------------------------
 
 void
 Semaphore::P()
 {
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
     
-    while (value == 0) { 			// semaphore not available
-	queue->Append((void *)currentThread);	// so go to sleep
-	currentThread->Sleep();
+    while (value == 0) {            // semaphore not available
+    queue->Append((void *)currentThread);   // so go to sleep
+    currentThread->Sleep();
     } 
-    value--; 					// semaphore available, 
-						// consume its value
+    value--;                    // semaphore available, 
+                        // consume its value
     
-    (void) interrupt->SetLevel(oldLevel);	// re-enable interrupts
+    (void) interrupt->SetLevel(oldLevel);   // re-enable interrupts
 }
 
 //----------------------------------------------------------------------
 // Semaphore::V
-// 	Increment semaphore value, waking up a waiter if necessary.
-//	As with P(), this operation must be atomic, so we need to disable
-//	interrupts.  Scheduler::ReadyToRun() assumes that threads
-//	are disabled when it is called.
+//  Increment semaphore value, waking up a waiter if necessary.
+//  As with P(), this operation must be atomic, so we need to disable
+//  interrupts.  Scheduler::ReadyToRun() assumes that threads
+//  are disabled when it is called.
 //----------------------------------------------------------------------
 
 void
@@ -91,12 +91,17 @@ Semaphore::V()
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
     thread = (Thread *)queue->Remove();
-    if (thread != NULL)	   // make thread ready, consuming the V immediately
-	scheduler->ReadyToRun(thread);
+    if (thread != NULL)    // make thread ready, consuming the V immediately
+    scheduler->ReadyToRun(thread);
     value++;
 
     (void) interrupt->SetLevel(oldLevel);
 }
+
+
+
+// ====================   LOCK   ==============================================
+
 
 // Dummy functions -- so we can compile our later assignments 
 // Note -- without a correct implementation of Condition::Wait(), 
@@ -113,48 +118,49 @@ Lock::~Lock() {
 }
 
 void Lock::Acquire() {
+    // avoid to acquire the same lock again
+    ASSERT(!isHeldByCurrentThread());
     IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
-    
-    if(mutex==1){
-        mutex=0;
-        heldByThread=currentThread->getName();
-    }
-    else{
+    DEBUG('l',"thread %s try to acquire lock\n",currentThread->getName());
+    while(mutex==0){
+        //can not enable int here because---Release can check the queue and not wake up thread.
         queue->Append((void *)currentThread);   // so go to sleep
+        //can not enable int here because---Misses wakeup and still holds lock (deadlock!)
+        DEBUG('l',"thread %s try to acquire lock, but failed\n",currentThread->getName());
         currentThread->Sleep();
     }
-
-    (void) interrupt->SetLevel(oldLevel);   // re-enable interrupts
+    mutex=0;
+    DEBUG('l',"\033[1;33;40mlock Acquired by thread: %s\033[m\n",currentThread->getName());
+    heldByThread=currentThread;
+    (void) interrupt->SetLevel(oldLevel);
 }
 
 void Lock::Release() {
+    ASSERT(isHeldByCurrentThread());
     IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
-    Thread *thread;
+    Thread *thread = (Thread *)queue->Remove();
     mutex=1;
-    thread = (Thread *)queue->Remove();
+    heldByThread=NULL;
+    DEBUG('l',"\033[1;33;40mlock Released by thread: %s\033[m\n\n",currentThread->getName());
     if (thread != NULL){    // make thread ready, consuming the V immediately
         scheduler->ReadyToRun(thread);
-        heldByThread=thread->getName();
-    }else{
-        heldByThread=NULL;
     }
-    
     (void) interrupt->SetLevel(oldLevel);   // re-enable interrupts
 }
 
 bool Lock::isHeldByCurrentThread(){
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
-    bool f=(heldByThread==currentThread->getName());
-    (void) interrupt->SetLevel(oldLevel);
-    return f;
+    //atomicity?
+    return heldByThread==currentThread;
 }
 
 
-//=================condition======================
+
+
+
+//=================   CONDITION   =====================================================
 
 Condition::Condition(char* debugName) {
     name=debugName;
-    value=0;
     queue=new List;
 }
 
@@ -165,14 +171,12 @@ Condition::~Condition() {
 void Condition::Wait(Lock* conditionLock) {
     ASSERT(conditionLock->isHeldByCurrentThread());
     IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
-    if(value==0){
-        queue->Append((void *)currentThread);   // so go to sleep
-        printf("thread %s sleep\n",currentThread->getName());
-        conditionLock->Release();
-        (void) interrupt->SetLevel(oldLevel);
-        currentThread->Sleep();
-        conditionLock->Acquire();
-    }
+    DEBUG('c',"\033[1;34;40mthread %s Wait\033[m\n",currentThread->getName());
+    queue->Append((void *)currentThread);   // so go to sleep
+    conditionLock->Release();
+    currentThread->Sleep();
+    conditionLock->Acquire();
+    
     (void) interrupt->SetLevel(oldLevel);
 }
 
@@ -180,14 +184,11 @@ void Condition::Signal(Lock* conditionLock) {
     ASSERT(conditionLock->isHeldByCurrentThread());
     Thread *thread;
     IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
+    
     thread = (Thread *)queue->Remove();
-    if (thread == NULL){
-        value=1;
-        // conditionLock->Release();
-    }
-    else{
+    if(thread!=NULL)
         scheduler->ReadyToRun(thread);
-    }
+    DEBUG('c',"\033[1;34;40mthread %s Signal\033[m\n",currentThread->getName());
     (void) interrupt->SetLevel(oldLevel);
 }
 
@@ -199,7 +200,6 @@ void Condition::Broadcast(Lock* conditionLock) {
         thread = (Thread *)queue->Remove();
         scheduler->ReadyToRun(thread);
     }
-    value=1;
-    // conditionLock->Release();
+    DEBUG('c',"\033[1;34;40mthread %s Broadcast\033[m\n",currentThread->getName());
     (void) interrupt->SetLevel(oldLevel);
 }

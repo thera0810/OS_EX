@@ -85,12 +85,14 @@ timer.o: ../machine/timer.cc ../threads/copyright.h ../machine/timer.h \
  ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
  ../machine/timer.h
 hello.o: ../threads/hello.c ../threads/hello.h
-dllist.o: ../threads/dllist.cc ../threads/dllist.h ../threads/copyright.h \
- ../threads/thread.h ../threads/utility.h ../threads/bool.h \
- ../machine/sysdep.h ../threads/copyright.h
+dllist.o: ../threads/dllist.cc ../threads/dllist.h ../threads/synch.h \
+ ../threads/copyright.h ../threads/thread.h ../threads/utility.h \
+ ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
+ ../threads/list.h
 dllist-driver.o: ../threads/dllist-driver.cc ../threads/dllist.h \
- ../threads/thread.h ../threads/copyright.h ../threads/utility.h \
- ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h
+ ../threads/synch.h ../threads/copyright.h ../threads/thread.h \
+ ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
+ ../threads/copyright.h ../threads/list.h
 # DEPENDENCIES MUST END AT END OF FILE
 # IF YOU PUT STUFF HERE IT WILL GO AWAY
 # see make depend above
