@@ -15,6 +15,9 @@
 #include <stdio.h>
 #include "synch.h"
 #include "Table.h"
+#include "BoundedBuffer.h"
+#include <ctime>
+
 // testnum is set in main.cc
 int testnum = 1;
 int threadnum=2;
@@ -24,6 +27,8 @@ DLList *ls=new DLList();
 
 int tablesize = 3;
 Table* tb = new Table(tablesize);
+
+BoundedBuffer * bf=new BoundedBuffer(10);
 
 //---------------------------ThreadTest1---------------------------
 
@@ -141,20 +146,17 @@ void ThreadTest4()
 	}
 }
 
-//---------------------------Table ThreadTest---------------------------
+//---------------------------Table ThreadTest 5---------------------------
 
-void TableThreadFunc0(int n)
+void TableThreadFunc0(int n) // allocate 5 item continueously
 {
 	int* object = new int();
 	*object = n;
-	tb->Alloc(object);
-	tb->Alloc(object);
-	tb->Alloc(object);
-	tb->Alloc(object);
-	//tb->Alloc(object);
+    for(int i=0;i<5;++i)
+	   tb->Alloc(object);
 }
 
-void TableThreadFunc1(int n)
+void TableThreadFunc1(int n) // release from 0 to tablesize one by one
 {
 	int i;
 	for (i = 0; i < tablesize; i++) {
@@ -164,11 +166,9 @@ void TableThreadFunc1(int n)
 	}
 }
 
-void TableThreadTest()
+void TableThreadTest5()
 {
 	DEBUG('t', "Entering TableThreadTest");
-
-
 	for (int i = 0; i < threadnum; ++i)
 	{
 		sprintf(threadname[i], "%d", i);
@@ -178,41 +178,64 @@ void TableThreadTest()
 	}
 }
 
-//---------------------------Table ThreadTest0---------------------------
+//---------------------------Table ThreadTest 6---------------------------
 
-void TableThreadFunc3(int n)
-{
-	int* object = new int();
-	*object = n;
-	tb->Alloc(object);
-	tb->Alloc(object);
-	tb->Alloc(object);
-	tb->Alloc(object);
-	tb->Alloc(object);
-}
-
-void TableThreadFunc4(int n)
-{
-	int i;
-	for (i = 0; i < tablesize; i++) {
-		int j = i % 3;
-		tb->Release(j);
-		currentThread->Yield();
-	}
-}
-
-void TableThreadTest0()
+void TableThreadTest6()
 {
 	DEBUG('t', "Entering TableThreadTest0");
-	tb->Get(0);
 	for (int i = 0; i < threadnum; ++i)
 	{
 		sprintf(threadname[i], "%d", i);
 		Thread* t = new Thread(threadname[i]);
-		if(i==0) t->Fork(TableThreadFunc3, i);
-		else t->Fork(TableThreadFunc4, i);
+		if(i==0) t->Fork(TableThreadFunc0, i);
+		else t->Fork(TableThreadFunc1, i);
 	}
 }
+
+
+//--------------------------- Bounded Buffer ThreadTest7---------------------------
+
+void Consumer(int n)
+{
+    int a[3]={2,0,0};
+    void *data=new char[10];
+    for(int i=0;i<n;++i){
+        int t=a[i];
+        bf->Read(data,t);
+        printf("%s:%d\n",currentThread->getName(),t);
+        bf->ShowState();
+    }
+}
+void Producer(int n)
+{
+    int a[3]={3,3,5};
+    void *data=new char[10];
+    for(int i=0;i<n;++i){
+        int t=a[i];
+        bf->Write(data,t);
+        printf("%s:%d\n",currentThread->getName(),t);
+        bf->ShowState();
+    }
+}
+void ThreadTest7()
+{
+    DEBUG('t', "Entering ThreadTest5\n");
+    bf->ShowState();
+    for (int i = 0; i < threadnum; ++i)
+    {
+        if(i%2==0){
+            sprintf(threadname[i], "Producer%d", i/2);
+            Thread* t = new Thread(threadname[i]);
+            t->Fork(Producer, 3);
+        }
+        else{
+            sprintf(threadname[i], "Consumer%d", i/2);
+            Thread* t = new Thread(threadname[i]);
+            t->Fork(Consumer, 3);
+        }
+    }
+}
+
 
 //----------------------------------------------------------------------
 // ThreadTest
@@ -257,16 +280,22 @@ ThreadTest()
 	case 5:// Table Threadtest
 	{
 		// ./nachos -q 5 -T 3  
-		TableThreadTest();
+		TableThreadTest5();
 		break;
 	}
 
 	case 6:// Table Threadtest
 	{
 		// ./nachos -q 6 -T 2  
-		TableThreadTest0();
+		TableThreadTest6();
 		break;
 	}
+
+    case 7://test boundedbuffer
+    {
+        ThreadTest7();
+        break;
+    }
 
     default:
     {

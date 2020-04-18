@@ -1,9 +1,6 @@
 #include<stdlib.h>
 #include "Table.h"
 #include "synch.h"
-#include "copyright.h"
-#include "system.h"
-#include "thread.h"
 #include <string.h>
 
 extern Thread* currentThread;
@@ -36,7 +33,7 @@ int Table::Alloc(void* object)
 	ASSERT(maxsize > 0);
 	lock->Acquire();
 	while (count == maxsize) {
-		printf("Thread%s allocated failed, Table is full\n\n", currentThread->getName());
+		DEBUG('b',"Thread%s allocated failed, Table is full\n\n", currentThread->getName());
 		condition->Wait(lock);
 	}
 	int i;
@@ -45,7 +42,7 @@ int Table::Alloc(void* object)
 		if (entries[i] == NULL) break;
 	}
 	entries[i] = (int*)object;
-	printf("Thread%s allocated an object: entries[%d]\n\n", currentThread->getName(), i);
+	DEBUG('b',"++ Thread%s allocated an object: entries[%d]\n\n", currentThread->getName(), i);
 	//DLLElement* element = new DLLElement(object, count);
 	//entries->SortedInsert(element, count);
 	++count;
@@ -62,13 +59,13 @@ void* Table::Get(int index)
 	lock->Acquire();
 	if (entries[index] != NULL)
 	{
-		printf("Thread%s got entries[%d]: %c\n\n", currentThread->getName(), index, *(char*)entries[index]);
+		DEBUG('b',"Thread%s got entries[%d]: %c\n\n", currentThread->getName(), index, *(char*)entries[index]);
 		lock->Release();
 		return entries[index];
 	}
 	else
 	{
-		printf("Thread%s got failed,entries[%d] is NULL\n\n", currentThread->getName(), index);
+		DEBUG('b',"Thread%s got failed,entries[%d] is NULL\n\n", currentThread->getName(), index);
 		lock->Release();
 		return NULL;
 	}
@@ -83,13 +80,13 @@ void Table::Release(int index)
 	if (entries[index]) {
 		--count;
 		entries[index] = NULL;
-		printf("Thread%s released an object: entries[%d]\n\n", currentThread->getName(), index);
-		condition->Signal(lock);                // table is not full nows
+		DEBUG('b',"-- Thread%s released an object: entries[%d]\n\n", currentThread->getName(), index);
+		condition->Broadcast(lock);                // table is not full nows
 		lock->Release();
 	}
 	else
 	{
-		printf("Thread%s released an empty object: entries[%d]\n\n", currentThread->getName(), index);
+		DEBUG('b',"Thread%s released an empty object: entries[%d]\n\n", currentThread->getName(), index);
 		lock->Release();
 	}
 }

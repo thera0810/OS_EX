@@ -63,7 +63,7 @@ threadtest.o: ../threads/threadtest.cc ../threads/copyright.h \
  ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
  ../threads/utility.h ../threads/dllist.h ../threads/synch.h \
- ../threads/Table.h
+ ../threads/Table.h ../threads/BoundedBuffer.h
 interrupt.o: ../machine/interrupt.cc ../threads/copyright.h \
  ../machine/interrupt.h ../threads/list.h ../threads/copyright.h \
  ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
@@ -89,9 +89,11 @@ hello.o: ../threads/hello.c ../threads/hello.h
 Table.o: ../threads/Table.cc ../threads/Table.h ../threads/synch.h \
  ../threads/copyright.h ../threads/thread.h ../threads/utility.h \
  ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
- ../threads/list.h ../threads/system.h ../threads/scheduler.h \
- ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
- ../machine/timer.h ../threads/utility.h
+ ../threads/list.h
+BoundedBuffer.o: ../threads/BoundedBuffer.cc ../threads/BoundedBuffer.h \
+ ../threads/synch.h ../threads/copyright.h ../threads/thread.h \
+ ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
+ ../threads/copyright.h ../threads/list.h
 dllist.o: ../threads/dllist.cc ../threads/dllist.h ../threads/synch.h \
  ../threads/copyright.h ../threads/thread.h ../threads/utility.h \
  ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \

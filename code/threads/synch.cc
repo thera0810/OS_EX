@@ -159,13 +159,20 @@ void Condition::Signal(Lock* conditionLock) {
     ASSERT(conditionLock->isHeldByCurrentThread());
     if(!semCond->queue->IsEmpty())
         semCond->V();
+    if(semCond->value>1)
+        semCond->value=1;
     DEBUG('c',"\033[1;34;40mthread %s Signal\033[m\n",currentThread->getName());
 }
 
 void Condition::Broadcast(Lock* conditionLock) {
     ASSERT(conditionLock->isHeldByCurrentThread());
+    int i=0;
     while(!semCond->queue->IsEmpty()){
         semCond->V();
+        ++i;
     }
+    if(semCond->value>1)
+        semCond->value=1;
+    DEBUG('b',"***** value: %d, len(queue): %d\n",semCond->value,i);
     DEBUG('c',"\033[1;34;40mthread %s Broadcast\033[m\n",currentThread->getName());
 }
