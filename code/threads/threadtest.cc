@@ -14,13 +14,16 @@
 #include "dllist.h"
 #include <stdio.h>
 #include "synch.h"
-
+#include "Table.h"
 // testnum is set in main.cc
 int testnum = 1;
 int threadnum=2;
 int N=10;
 char threadname[10][5]={{0}};
 DLList *ls=new DLList();
+
+int tablesize = 3;
+Table* tb = new Table(tablesize);
 
 //---------------------------ThreadTest1---------------------------
 
@@ -138,6 +141,79 @@ void ThreadTest4()
 	}
 }
 
+//---------------------------Table ThreadTest---------------------------
+
+void TableThreadFunc0(int n)
+{
+	int* object = new int();
+	*object = n;
+	tb->Alloc(object);
+	tb->Alloc(object);
+	tb->Alloc(object);
+	tb->Alloc(object);
+	//tb->Alloc(object);
+}
+
+void TableThreadFunc1(int n)
+{
+	int i;
+	for (i = 0; i < tablesize; i++) {
+		int j = i%3;
+		tb->Release(j);
+		currentThread->Yield();
+	}
+}
+
+void TableThreadTest()
+{
+	DEBUG('t', "Entering TableThreadTest");
+
+
+	for (int i = 0; i < threadnum; ++i)
+	{
+		sprintf(threadname[i], "%d", i);
+		Thread* t = new Thread(threadname[i]);
+		if (i == 1) t->Fork(TableThreadFunc1, i);
+		else t->Fork(TableThreadFunc0, i);
+	}
+}
+
+//---------------------------Table ThreadTest0---------------------------
+
+void TableThreadFunc3(int n)
+{
+	int* object = new int();
+	*object = n;
+	tb->Alloc(object);
+	tb->Alloc(object);
+	tb->Alloc(object);
+	tb->Alloc(object);
+	tb->Alloc(object);
+}
+
+void TableThreadFunc4(int n)
+{
+	int i;
+	for (i = 0; i < tablesize; i++) {
+		int j = i % 3;
+		tb->Release(j);
+		currentThread->Yield();
+	}
+}
+
+void TableThreadTest0()
+{
+	DEBUG('t', "Entering TableThreadTest0");
+	tb->Get(0);
+	for (int i = 0; i < threadnum; ++i)
+	{
+		sprintf(threadname[i], "%d", i);
+		Thread* t = new Thread(threadname[i]);
+		if(i==0) t->Fork(TableThreadFunc3, i);
+		else t->Fork(TableThreadFunc4, i);
+	}
+}
+
 //----------------------------------------------------------------------
 // ThreadTest
 // 	Invoke a test routine.
@@ -177,6 +253,20 @@ ThreadTest()
         ThreadTest4();
         break;
     }
+
+	case 5:// Table Threadtest
+	{
+		// ./nachos -q 5 -T 3  
+		TableThreadTest();
+		break;
+	}
+
+	case 6:// Table Threadtest
+	{
+		// ./nachos -q 6 -T 2  
+		TableThreadTest0();
+		break;
+	}
 
     default:
     {

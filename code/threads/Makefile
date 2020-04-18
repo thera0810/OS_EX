@@ -62,7 +62,8 @@ threadtest.o: ../threads/threadtest.cc ../threads/copyright.h \
  ../machine/sysdep.h ../threads/copyright.h ../threads/thread.h \
  ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
- ../threads/utility.h ../threads/dllist.h ../threads/synch.h
+ ../threads/utility.h ../threads/dllist.h ../threads/synch.h \
+ ../threads/Table.h
 interrupt.o: ../machine/interrupt.cc ../threads/copyright.h \
  ../machine/interrupt.h ../threads/list.h ../threads/copyright.h \
  ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
@@ -85,6 +86,12 @@ timer.o: ../machine/timer.cc ../threads/copyright.h ../machine/timer.h \
  ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
  ../machine/timer.h
 hello.o: ../threads/hello.c ../threads/hello.h
+Table.o: ../threads/Table.cc ../threads/Table.h ../threads/synch.h \
+ ../threads/copyright.h ../threads/thread.h ../threads/utility.h \
+ ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
+ ../threads/list.h ../threads/system.h ../threads/scheduler.h \
+ ../machine/interrupt.h ../threads/list.h ../machine/stats.h \
+ ../machine/timer.h ../threads/utility.h
 dllist.o: ../threads/dllist.cc ../threads/dllist.h ../threads/synch.h \
  ../threads/copyright.h ../threads/thread.h ../threads/utility.h \
  ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
