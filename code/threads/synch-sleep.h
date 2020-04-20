@@ -133,6 +133,7 @@ class Condition {
                     // these operations
 
   private:
+    void* firstLock;
     char* name;
     List *queue;
 };

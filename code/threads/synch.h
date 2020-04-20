@@ -37,8 +37,6 @@
 // now be different.
 
 class Semaphore {
-    friend class Lock;
-    friend class Condition;
   public:
     Semaphore(char* debugName, int initialValue);   // set initial value
     ~Semaphore();                       // de-allocate semaphore
@@ -78,11 +76,13 @@ class Lock {
                     // holds this lock.  Useful for
                     // checking in Release, and in
                     // Condition variable ops below.
+    
   private:
     char* name;             // for debugging
-    Semaphore *semLock;
-    Thread * heldByThread;
+    int mutex;
+    List* queue; // queue of waiting for mutex
     // plus some other stuff you'll need to define
+    Thread * heldByThread;
 };
 
 // The following class defines a "condition variable".  A condition
@@ -133,8 +133,8 @@ class Condition {
                     // these operations
 
   private:
-    char* name;             // for debugging
-    Semaphore *semCond;
-    // plus some other stuff you'll need to define
+    void* firstLock;
+    char* name;
+    List *queue;
 };
 #endif // SYNCH_H

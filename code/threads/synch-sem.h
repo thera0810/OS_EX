@@ -79,6 +79,7 @@ class Lock {
                     // checking in Release, and in
                     // Condition variable ops below.
   private:
+    int flag;
     char* name;             // for debugging
     Semaphore *semLock;
     Thread * heldByThread;
@@ -133,7 +134,9 @@ class Condition {
                     // these operations
 
   private:
+    void* firstLock;
     char* name;             // for debugging
+    int waitThreadCount;
     Semaphore *semCond;
     // plus some other stuff you'll need to define
 };

@@ -1,4 +1,4 @@
-#include<stdlib.h>
+#include <stdlib.h>
 #include "Table.h"
 #include "synch.h"
 #include <string.h>

@@ -160,15 +160,22 @@ bool Lock::isHeldByCurrentThread(){
 //=================   CONDITION   =====================================================
 
 Condition::Condition(char* debugName) {
+    firstLock=NULL;
     name=debugName;
     queue=new List;
 }
 
 Condition::~Condition() {
     delete queue;
+    delete firstLock;
 }
 
 void Condition::Wait(Lock* conditionLock) {
+    if (firstLock==NULL)
+    {
+        firstLock=conditionLock;
+    }
+    ASSERT(firstLock==conditionLock);
     ASSERT(conditionLock->isHeldByCurrentThread());
     IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
     DEBUG('c',"\033[1;34;40mthread %s Wait\033[m\n",currentThread->getName());
@@ -181,6 +188,11 @@ void Condition::Wait(Lock* conditionLock) {
 }
 
 void Condition::Signal(Lock* conditionLock) {
+    if (firstLock==NULL)
+    {
+        firstLock=conditionLock;
+    }
+    ASSERT(firstLock==conditionLock);
     ASSERT(conditionLock->isHeldByCurrentThread());
     Thread *thread;
     IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
@@ -193,6 +205,11 @@ void Condition::Signal(Lock* conditionLock) {
 }
 
 void Condition::Broadcast(Lock* conditionLock) {
+    if (firstLock==NULL)
+    {
+        firstLock=conditionLock;
+    }
+    ASSERT(firstLock==conditionLock);
     ASSERT(conditionLock->isHeldByCurrentThread());
     Thread *thread;
     IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts

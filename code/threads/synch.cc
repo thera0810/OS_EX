@@ -65,13 +65,14 @@ void
 Semaphore::P()
 {
     IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
-
+    
     while (value == 0) {            // semaphore not available
-        queue->Append((void *)currentThread);   // so go to sleep
-        currentThread->Sleep();
-    }
-    value--;            // semaphore available,
+    queue->Append((void *)currentThread);   // so go to sleep
+    currentThread->Sleep();
+    } 
+    value--;                    // semaphore available, 
                         // consume its value
+    
     (void) interrupt->SetLevel(oldLevel);   // re-enable interrupts
 }
 
@@ -98,81 +99,124 @@ Semaphore::V()
 }
 
 
+
+// ====================   LOCK   ==============================================
+
+
 // Dummy functions -- so we can compile our later assignments 
 // Note -- without a correct implementation of Condition::Wait(), 
 // the test case in the network assignment won't work!
-
-//==================Lock==================================================
 Lock::Lock(char* debugName) {
     name=debugName;
-    semLock=new Semaphore(debugName,1);
+    mutex=1;
+    queue = new List;
     heldByThread=NULL;
 }
 
 Lock::~Lock() {
-    delete semLock;
+    delete queue;
 }
 
 void Lock::Acquire() {
+    // avoid to acquire the same lock again
     ASSERT(!isHeldByCurrentThread());
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
     DEBUG('l',"thread %s try to acquire lock\n",currentThread->getName());
-    semLock->P();
-    heldByThread=currentThread;
+    while(mutex==0){
+        //can not enable int here because---Release can check the queue and not wake up thread.
+        queue->Append((void *)currentThread);   // so go to sleep
+        //can not enable int here because---Misses wakeup and still holds lock (deadlock!)
+        DEBUG('l',"thread %s try to acquire lock, but failed\n",currentThread->getName());
+        currentThread->Sleep();
+    }
+    mutex=0;
     DEBUG('l',"\033[1;33;40mlock Acquired by thread: %s\033[m\n",currentThread->getName());
+    heldByThread=currentThread;
+    (void) interrupt->SetLevel(oldLevel);
 }
 
 void Lock::Release() {
     ASSERT(isHeldByCurrentThread());
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
+    Thread *thread = (Thread *)queue->Remove();
+    mutex=1;
     heldByThread=NULL;
     DEBUG('l',"\033[1;33;40mlock Released by thread: %s\033[m\n\n",currentThread->getName());
-    if(semLock->value==0)
-        semLock->V();
-    // if(semLock->value>1)semLock->value=1;
-
+    if (thread != NULL){    // make thread ready, consuming the V immediately
+        scheduler->ReadyToRun(thread);
+    }
+    (void) interrupt->SetLevel(oldLevel);   // re-enable interrupts
 }
 
 bool Lock::isHeldByCurrentThread(){
+    //atomicity?
     return heldByThread==currentThread;
 }
 
 
-//=================condition===================================================
+
+
+
+//=================   CONDITION   =====================================================
 
 Condition::Condition(char* debugName) {
+    firstLock=NULL;
     name=debugName;
-    semCond=new Semaphore(debugName,0);
+    queue=new List;
 }
 
 Condition::~Condition() {
-    delete semCond;
+    delete queue;
+    delete firstLock;
 }
 
 void Condition::Wait(Lock* conditionLock) {
+    if (firstLock==NULL)
+    {
+        firstLock=conditionLock;
+    }
+    ASSERT(firstLock==conditionLock);
     ASSERT(conditionLock->isHeldByCurrentThread());
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
     DEBUG('c',"\033[1;34;40mthread %s Wait\033[m\n",currentThread->getName());
+    queue->Append((void *)currentThread);   // so go to sleep
     conditionLock->Release();
-    semCond->P();
+    currentThread->Sleep();
     conditionLock->Acquire();
+    
+    (void) interrupt->SetLevel(oldLevel);
 }
 
 void Condition::Signal(Lock* conditionLock) {
+    if (firstLock==NULL)
+    {
+        firstLock=conditionLock;
+    }
+    ASSERT(firstLock==conditionLock);
     ASSERT(conditionLock->isHeldByCurrentThread());
-    if(!semCond->queue->IsEmpty())
-        semCond->V();
-    if(semCond->value>1)
-        semCond->value=1;
+    Thread *thread;
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
+    
+    thread = (Thread *)queue->Remove();
+    if(thread!=NULL)
+        scheduler->ReadyToRun(thread);
     DEBUG('c',"\033[1;34;40mthread %s Signal\033[m\n",currentThread->getName());
+    (void) interrupt->SetLevel(oldLevel);
 }
 
 void Condition::Broadcast(Lock* conditionLock) {
-    ASSERT(conditionLock->isHeldByCurrentThread());
-    int i=0;
-    while(!semCond->queue->IsEmpty()){
-        semCond->V();
-        ++i;
+    if (firstLock==NULL)
+    {
+        firstLock=conditionLock;
     }
-    if(semCond->value>1)
-        semCond->value=1;
-    DEBUG('b',"***** value: %d, len(queue): %d\n",semCond->value,i);
+    ASSERT(firstLock==conditionLock);
+    ASSERT(conditionLock->isHeldByCurrentThread());
+    Thread *thread;
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
+    while(!queue->IsEmpty()){
+        thread = (Thread *)queue->Remove();
+        scheduler->ReadyToRun(thread);
+    }
     DEBUG('c',"\033[1;34;40mthread %s Broadcast\033[m\n",currentThread->getName());
+    (void) interrupt->SetLevel(oldLevel);
 }

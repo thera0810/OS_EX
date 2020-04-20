@@ -125,10 +125,7 @@ void Lock::Release() {
     ASSERT(isHeldByCurrentThread());
     heldByThread=NULL;
     DEBUG('l',"\033[1;33;40mlock Released by thread: %s\033[m\n\n",currentThread->getName());
-    if(semLock->value==0)
-        semLock->V();
-    // if(semLock->value>1)semLock->value=1;
-
+    semLock->V();
 }
 
 bool Lock::isHeldByCurrentThread(){
@@ -139,40 +136,60 @@ bool Lock::isHeldByCurrentThread(){
 //=================condition===================================================
 
 Condition::Condition(char* debugName) {
+    firstLock=NULL;
     name=debugName;
+    waitThreadCount=0;
     semCond=new Semaphore(debugName,0);
 }
 
 Condition::~Condition() {
     delete semCond;
+    delete firstLock;
 }
 
 void Condition::Wait(Lock* conditionLock) {
+    if (firstLock==NULL)
+    {
+        firstLock=conditionLock;
+    }
+    ASSERT(firstLock==conditionLock);
     ASSERT(conditionLock->isHeldByCurrentThread());
     DEBUG('c',"\033[1;34;40mthread %s Wait\033[m\n",currentThread->getName());
     conditionLock->Release();
+    waitThreadCount++;
     semCond->P();
     conditionLock->Acquire();
 }
 
 void Condition::Signal(Lock* conditionLock) {
+    if (firstLock==NULL)
+    {
+        firstLock=conditionLock;
+    }
+    ASSERT(firstLock==conditionLock);
     ASSERT(conditionLock->isHeldByCurrentThread());
-    if(!semCond->queue->IsEmpty())
+    if(waitThreadCount>0)
+    {
         semCond->V();
-    if(semCond->value>1)
-        semCond->value=1;
+        waitThreadCount--;
+    }
     DEBUG('c',"\033[1;34;40mthread %s Signal\033[m\n",currentThread->getName());
 }
 
 void Condition::Broadcast(Lock* conditionLock) {
-    ASSERT(conditionLock->isHeldByCurrentThread());
-    int i=0;
-    while(!semCond->queue->IsEmpty()){
-        semCond->V();
-        ++i;
+    if (firstLock==NULL)
+    {
+        firstLock=conditionLock;
     }
-    if(semCond->value>1)
-        semCond->value=1;
+    ASSERT(firstLock==conditionLock);
+    ASSERT(conditionLock->isHeldByCurrentThread());
+    int i=waitThreadCount;
+    while(waitThreadCount>0){
+        semCond->V();
+        waitThreadCount--;
+    }
+    //if(semCond->value>1)
+    //    semCond->value=1;
     DEBUG('b',"***** value: %d, len(queue): %d\n",semCond->value,i);
     DEBUG('c',"\033[1;34;40mthread %s Broadcast\033[m\n",currentThread->getName());
 }

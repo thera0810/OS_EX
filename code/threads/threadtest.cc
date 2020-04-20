@@ -8,7 +8,8 @@
 // Copyright (c) 1992-1993 The Regents of the University of California.
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
-
+#include <stdlib.h>
+#include <time.h>
 #include "copyright.h"
 #include "system.h"
 #include "dllist.h"
@@ -22,7 +23,7 @@
 int testnum = 1;
 int threadnum=2;
 int N=10;
-char threadname[10][5]={{0}};
+char threadname[10][20]={{0}};
 DLList *ls=new DLList();
 
 int tablesize = 3;
@@ -168,7 +169,7 @@ void TableThreadFunc1(int n) // release from 0 to tablesize one by one
 
 void TableThreadTest5()
 {
-	DEBUG('t', "Entering TableThreadTest");
+	DEBUG('t', "Entering TableThreadTest5");
 	for (int i = 0; i < threadnum; ++i)
 	{
 		sprintf(threadname[i], "%d", i);
@@ -182,7 +183,7 @@ void TableThreadTest5()
 
 void TableThreadTest6()
 {
-	DEBUG('t', "Entering TableThreadTest0");
+	DEBUG('t', "Entering TableThreadTest6");
 	for (int i = 0; i < threadnum; ++i)
 	{
 		sprintf(threadname[i], "%d", i);
@@ -197,10 +198,11 @@ void TableThreadTest6()
 
 void Consumer(int n)
 {
-    int a[3]={2,0,0};
+    //int a[3]={2,0,0};
     void *data=new char[10];
     for(int i=0;i<n;++i){
-        int t=a[i];
+        int t=rand()%10;
+        //int t=a[i];
         bf->Read(data,t);
         printf("%s:%d\n",currentThread->getName(),t);
         bf->ShowState();
@@ -208,10 +210,11 @@ void Consumer(int n)
 }
 void Producer(int n)
 {
-    int a[3]={3,3,5};
+    //int a[3]={3,3,5};
     void *data=new char[10];
     for(int i=0;i<n;++i){
-        int t=a[i];
+        int t=rand()%10;
+        //int t=a[i];
         bf->Write(data,t);
         printf("%s:%d\n",currentThread->getName(),t);
         bf->ShowState();
@@ -219,7 +222,8 @@ void Producer(int n)
 }
 void ThreadTest7()
 {
-    DEBUG('t', "Entering ThreadTest5\n");
+    srand(time(NULL));
+    DEBUG('t', "Entering ThreadTest7\n");
     bf->ShowState();
     for (int i = 0; i < threadnum; ++i)
     {
