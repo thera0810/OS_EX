@@ -283,14 +283,14 @@ ThreadTest()
 
 	case 5:// Table Threadtest
 	{
-		// ./nachos -q 5 -T 3  
+		// ./nachos -d b -q 5 -T 3  
 		TableThreadTest5();
 		break;
 	}
 
 	case 6:// Table Threadtest
 	{
-		// ./nachos -q 6 -T 2  
+		// ./nachos -d b -q 6 -T 2  
 		TableThreadTest6();
 		break;
 	}

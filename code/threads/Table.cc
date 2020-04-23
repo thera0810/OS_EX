@@ -12,13 +12,13 @@ Table::Table(int size)
 	ASSERT(size > 0);
 	maxsize = size;
 	count = 0;
-	lock = new Lock("table_lock");
-	condition = new Condition("table_full_con");
-	entries = (int**)malloc(sizeof(int*) * size);
-	for (int i = 0; i < maxsize; i++) entries[i] = NULL;
+	lock = new Lock("table_lock");//used for an exclusive lock. 
+	condition = new Condition("table_full_con");//a semaphore to process blockage problem.
+	entries = (int**)malloc(sizeof(int*) * size);//a list to save the addr of content in each slot.
+	for (int i = 0; i < maxsize; i++) entries[i] = NULL;//initialize each element NULL.
 }
 
-Table::~Table()
+Table::~Table()//deallocate Table
 {
 	delete entries;
 	delete lock;
@@ -30,23 +30,21 @@ Table::~Table()
 // return the table index for the slot or -1 on error.
 int Table::Alloc(void* object)
 {
-	ASSERT(maxsize > 0);
-	lock->Acquire();
-	while (count == maxsize) {
+	lock->Acquire();//acquired an exclusive lock.
+	ASSERT(maxsize > 0);//make sure the Table is available.
+	while (count == maxsize) {//Table is full.
 		DEBUG('b',"Thread%s allocated failed, Table is full\n\n", currentThread->getName());
-		condition->Wait(lock);
+		condition->Wait(lock);//the threads will go to Sleep to wait for resource.
 	}
 	int i;
 	for (i = 0; i < maxsize; ++i)
 	{
-		if (entries[i] == NULL) break;
+		if (entries[i] == NULL) break;//look for the first emtpy entry in the Table.
 	}
-	entries[i] = (int*)object;
+	entries[i] = (int*)object;//save the addr of object pointer.
 	DEBUG('b',"++ Thread%s allocated an object: entries[%d]\n\n", currentThread->getName(), i);
-	//DLLElement* element = new DLLElement(object, count);
-	//entries->SortedInsert(element, count);
-	++count;
-	lock->Release();
+	++count;//count total number of used slots in current Table.
+	lock->Release();//released an exclusive lock
 	return i;
 }
 
@@ -55,38 +53,38 @@ int Table::Alloc(void* object)
 // and the pointer in place.
 void* Table::Get(int index)
 {
-	ASSERT(index >= 0 && index < maxsize);
-	lock->Acquire();
-	if (entries[index] != NULL)
+	lock->Acquire();//acquired an exclusive lock.
+	ASSERT(index >= 0 && index < maxsize);//make sure the index is valid.
+	if (entries[index] != NULL)//the entry is not empty.
 	{
 		DEBUG('b',"Thread%s got entries[%d]: %c\n\n", currentThread->getName(), index, *(char*)entries[index]);
-		lock->Release();
-		return entries[index];
+		lock->Release();//released an exclusive lock.
+		return entries[index];//the content of the entry is returned.
 	}
 	else
 	{
 		DEBUG('b',"Thread%s got failed,entries[%d] is NULL\n\n", currentThread->getName(), index);
-		lock->Release();
-		return NULL;
+		lock->Release();//released an exclusive lock.
+		return NULL;//If the entry is empty, NULL is returned to the caller. 
 	}
 }
 
 // free a table slot
 void Table::Release(int index)
 {
-	ASSERT(index >= 0 && index < maxsize);
-	lock->Acquire();
+	lock->Acquire();//acquired an exclusive lock. 
+	ASSERT(index >= 0 && index < maxsize);//make sure the index is valid.
 
-	if (entries[index]) {
-		--count;
-		entries[index] = NULL;
+	if (entries[index]) {//one slot is released in the Table.
+		--count;//update total number of used slots in current Table.
+		entries[index] = NULL;//released the entry.
 		DEBUG('b',"-- Thread%s released an object: entries[%d]\n\n", currentThread->getName(), index);
-		condition->Broadcast(lock);                // table is not full nows
-		lock->Release();
+		condition->Broadcast(lock);// table is not full now.
+		lock->Release();//released an exclusive lock.
 	}
-	else
+	else//no space has been released yet.
 	{
 		DEBUG('b',"Thread%s released an empty object: entries[%d]\n\n", currentThread->getName(), index);
-		lock->Release();
+		lock->Release();//released an exclusive lock.
 	}
 }
