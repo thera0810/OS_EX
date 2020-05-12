@@ -63,7 +63,7 @@ threadtest.o: ../threads/threadtest.cc ../threads/copyright.h \
  ../threads/scheduler.h ../threads/list.h ../machine/interrupt.h \
  ../threads/list.h ../machine/stats.h ../machine/timer.h \
  ../threads/utility.h ../threads/dllist.h ../threads/synch.h \
- ../threads/Table.h ../threads/BoundedBuffer.h
+ ../threads/Table.h ../threads/BoundedBuffer.h ../threads/EventBarrier.h
 interrupt.o: ../machine/interrupt.cc ../threads/copyright.h \
  ../machine/interrupt.h ../threads/list.h ../threads/copyright.h \
  ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
@@ -99,6 +99,10 @@ dllist.o: ../threads/dllist.cc ../threads/dllist.h ../threads/synch.h \
  ../threads/bool.h ../machine/sysdep.h ../threads/copyright.h \
  ../threads/list.h
 dllist-driver.o: ../threads/dllist-driver.cc ../threads/dllist.h \
+ ../threads/synch.h ../threads/copyright.h ../threads/thread.h \
+ ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
+ ../threads/copyright.h ../threads/list.h
+EventBarrier.o: ../threads/EventBarrier.cc ../threads/EventBarrier.h \
  ../threads/synch.h ../threads/copyright.h ../threads/thread.h \
  ../threads/utility.h ../threads/bool.h ../machine/sysdep.h \
  ../threads/copyright.h ../threads/list.h

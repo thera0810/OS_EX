@@ -17,6 +17,7 @@
 #include "synch.h"
 #include "Table.h"
 #include "BoundedBuffer.h"
+#include "EventBarrier.h"
 #include <ctime>
 
 // testnum is set in main.cc
@@ -28,8 +29,10 @@ DLList *ls=new DLList();
 
 int tablesize = 3;
 Table* tb = new Table(tablesize);
-
 BoundedBuffer * bf=new BoundedBuffer(10);
+
+//EventBarrier
+EventBarrier* eb=new EventBarrier();
 
 //---------------------------ThreadTest1---------------------------
 
@@ -71,7 +74,7 @@ ThreadTest1()
 
 }
 
-//---------------------------ThreadTest2---------------------------
+//---------------------------ThreadTest2 dllist---------------------------
 
 void SimpleThread20(int which)
 {
@@ -106,7 +109,7 @@ void ThreadTest2()
 }
 
 
-//---------------------------ThreadTest3---------------------------
+//---------------------------ThreadTest3 dllist---------------------------
 
 void SimpleThreadFunc3(int n)
 {
@@ -125,7 +128,7 @@ void ThreadTest3()
 	}
 }
 
-//---------------------------ThreadTest4---------------------------
+//---------------------------ThreadTest4 dllist---------------------------
 
 void SimpleThreadFunc4(int n)
 {
@@ -147,7 +150,7 @@ void ThreadTest4()
 	}
 }
 
-//---------------------------Table ThreadTest 5---------------------------
+//---------------------------ThreadTest 5 Table---------------------------
 
 void TableThreadFunc0(int n) // allocate 5 item continueously
 {
@@ -179,7 +182,7 @@ void TableThreadTest5()
 	}
 }
 
-//---------------------------Table ThreadTest 6---------------------------
+//---------------------------ThreadTest 6 Table---------------------------
 
 void TableThreadTest6()
 {
@@ -194,7 +197,7 @@ void TableThreadTest6()
 }
 
 
-//--------------------------- Bounded Buffer ThreadTest7---------------------------
+//---------------------------ThreadTest7 Bounded Buffer---------------------------
 
 void Consumer(int n)
 {
@@ -239,6 +242,32 @@ void ThreadTest7()
         }
     }
 }
+
+
+//--------------------------- ThreadTest 8 EventBarrier---------------------------
+
+void SimpleThreadFunc8_wait(int n)
+{
+    eb->Wait();
+}
+void SimpleThreadFunc8_signal(int n)
+{
+    eb->Signal();
+}
+void ThreadTest8()
+{
+    DEBUG('t', "Entering ThreadTest8");
+    for (int i = 0; i < threadnum; ++i)
+    {
+        sprintf(threadname[i], "%d", i);
+        Thread* t = new Thread(threadname[i]);
+        if(i!=threadnum-1)
+            t->Fork(SimpleThreadFunc8_wait,i);
+        else
+            t->Fork(SimpleThreadFunc8_signal,i);
+    }
+}
+
 
 
 //----------------------------------------------------------------------
@@ -298,6 +327,12 @@ ThreadTest()
     case 7://test boundedbuffer
     {
         ThreadTest7();
+        break;
+    }
+
+    case 8://test boundedbuffer
+    {
+        ThreadTest8();
         break;
     }
 
