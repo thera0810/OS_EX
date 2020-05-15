@@ -22,9 +22,7 @@ void EventBarrier::Wait(){
         cnt++;
         DEBUG('e',"thread %s wait. condsig cnt = %d\n",currentThread->getName(),cnt);
         condsig->Wait(lock);
-        // cnt--;
     }
-    // Complete();
     lock->Release();
 }
 
@@ -47,11 +45,11 @@ void EventBarrier::Complete(){
     lock->Acquire();
     ASSERT(cnt>0);
     cnt--;
-    if(cnt>0){//last one to call complete
+    if(cnt>0){
         DEBUG('e',"thread %s wait to complete. condcom cnt = %d\n",currentThread->getName(),cnt);
         condcom->Wait(lock);
     }
-    else{
+    else{//last one to call complete
         condcom->Broadcast(lock);
         DEBUG('e',"thread %s complete.\n",currentThread->getName());
     }

@@ -49,6 +49,8 @@ void Alarm::Pause(int howLong)
         return;
     }
 
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
+
 	waiternum++;
 	int wakeTime=-1;
 	printf("Thread%s set an alarm for %d Ticks.\n\n", currentThread->getName(), howLong);
@@ -58,8 +60,6 @@ void Alarm::Pause(int howLong)
         t->Fork(sentinel, 0);
     	DEBUG('a',"\033[1;33;40mCheckThread has been created.\033[m\n\n");
     }
-
-    IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
 
     wakeTime = stats->totalTicks + howLong;		//set the Alarm
 	DEBUG('a',"\033[1;33;40mThread%s SLEEP, it will wake up at %d totalTicks.\033[m\n\n", currentThread->getName(), wakeTime);

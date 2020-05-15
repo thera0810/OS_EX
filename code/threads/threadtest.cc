@@ -17,18 +17,21 @@
 #include "synch.h"
 #include "Table.h"
 #include "BoundedBuffer.h"
-#include "EventBarrier.h"
+//#include "EventBarrier.h"
+#include "Elevator.h"
 #include <ctime>
 
-/*********************NEW ADD LXH*****************/
+
 #include "sysdep.h"
 #include "Alarm.h"
-/*********************NEW ADD LXH****************/
+
 
 // testnum is set in main.cc
 int testnum = 1;
 int threadnum=2;
 int N=10;
+int floors=30;
+int capacity=7;
 char threadname[10][20]={{0}};
 DLList *ls=new DLList();
 
@@ -278,7 +281,7 @@ void ThreadTest8()
 
 
 //--------------------------- ThreadTest 9 Alarm ---------------------------
-/*********************NEW ADD LXH************************/
+
 void AlarmThreadFunc1(int n)
 {
         int when = (n*500)%149;
@@ -310,7 +313,68 @@ void AlarmThreadTest9()
 //--------------------------- ThreadTest 9 Alarm ---------------------------
 
 
+//--------------------------- ThreadTest 10 Elevator ---------------------------
 
+Building *building = new Building("Castle Building",floors,1);
+
+void ElevatorThreadFunc()  //Elevator Thread
+{
+    building->StartElevator();
+}
+
+void RiderThreadFunc(int id)                //Rider Threads
+{
+    Elevator *e;
+
+    int srcFloor = (rand()%floors)+1;
+    int dstFloor = (rand()%floors)+1;
+
+    if (srcFloor == dstFloor)
+        return;
+
+    DEBUG('t',"Rider %d travelling from %d to %d\n",id,srcFloor,dstFloor);
+    do {
+        if (srcFloor < dstFloor) {
+            DEBUG('t', "Rider %d CallUp(%d)\n", id, srcFloor);
+            building->CallUp(srcFloor);
+            DEBUG('t', "Rider %d AwaitUp(%d)\n", id, srcFloor);
+            e = building->AwaitUp(srcFloor);
+        } else {
+            DEBUG('t', "Rider %d CallDown(%d)\n", id, srcFloor);
+            building->CallDown(srcFloor);
+            DEBUG('t', "Rider %d AwaitDown(%d)\n", id, srcFloor);
+            e = building->AwaitDown(srcFloor);
+        }
+        DEBUG('t', "Rider %d Enter()\n", id);
+    } while (!e->Enter()); // elevator might be full!
+
+    DEBUG('t', "Rider %d RequestFloor(%d)\n", id, dstFloor);
+    e->RequestFloor(dstFloor); // doesn't return until arrival
+    DEBUG('t', "Rider %d Exit()\n", id);
+    e->Exit();
+    DEBUG('t', "Rider %d finished\n", id);
+}
+
+
+void ElevatorTest10()
+{
+    DEBUG('t', "Entering ElevatorTest10");
+
+    srand(time(NULL));
+
+    ElevatorThreadFunc();
+
+    for (int i = 0; i < threadnum; ++i)
+    {
+        sprintf(threadname[i], "%d", i);
+        Thread* t = new Thread(threadname[i]);
+        t->Fork(RiderThreadFunc, i);
+    }
+    
+}
+
+
+//--------------------------- ThreadTest 9 Elevator ---------------------------
 
 
 //----------------------------------------------------------------------
@@ -382,6 +446,12 @@ ThreadTest()
     case 9://test alarm
     {
         AlarmThreadTest9();
+        break;
+    }
+
+    case 10://
+    {
+        ElevatorTest10();
         break;
     }
 

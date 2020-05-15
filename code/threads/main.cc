@@ -59,6 +59,8 @@
 extern int testnum;
 extern int threadnum;
 extern int N;
+extern int floors;
+extern int capacity;
 #endif
 
 // External functions used by this file
@@ -109,10 +111,20 @@ main(int argc, char **argv)
         threadnum = atoi(argv[1]);
         argCount++;
         break;
+      case 'F':
+        floors = atoi(argv[1]);
+        argCount++;
+        break;
+      case 'C':
+        capacity = atoi(argv[1]);
+        argCount++;
+        break;
       default:
         testnum = 1;
         N = 10;
         threadnum = 2;
+        floors = 30;
+        capacity = 7;
         break;
       }
     }
