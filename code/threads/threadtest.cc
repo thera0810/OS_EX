@@ -20,6 +20,12 @@
 #include "EventBarrier.h"
 #include <ctime>
 
+/*********************NEW ADD LXH*****************/
+#include <time.h>
+#include "sysdep.h"
+#include "Alarm.h"
+/*********************NEW ADD LXH****************/
+
 // testnum is set in main.cc
 int testnum = 1;
 int threadnum=2;
@@ -33,7 +39,7 @@ BoundedBuffer * bf=new BoundedBuffer(10);
 
 //EventBarrier
 EventBarrier* eb=new EventBarrier();
-
+//Alarm* alarms=new Alarm();
 //---------------------------ThreadTest1---------------------------
 
 //----------------------------------------------------------------------
@@ -270,6 +276,44 @@ void ThreadTest8()
 
 
 
+
+//--------------------------- ThreadTest 9 Alarm ---------------------------
+/*********************NEW ADD LXH************************/
+void AlarmThreadFunc1(int n)
+{
+        int when = (n*500)%149;
+        alarms->Pause(when);
+        printf("Thread%s has been awakened.\n\n", currentThread->getName());
+        //DEBUG('a',"Thread%s has been awakened.\n\n", currentThread->getName());
+            
+}
+
+void AlarmCheckThreadFunc(int n) // a SNEAKY check thread
+{
+    int i;
+    for (i = 0; i < 500; i++) 
+        currentThread->Yield();
+}
+
+void AlarmThreadTest9()
+{
+    DEBUG('t', "Entering AlarmThreadTest9");
+    for (int i = 0; i < threadnum; ++i)
+    {
+        sprintf(threadname[i], "%d", i);
+        Thread* t = new Thread(threadname[i]);
+        t->Fork(AlarmThreadFunc1, i);
+    }
+    AlarmCheckThreadFunc(0);
+}
+
+
+//--------------------------- ThreadTest 9 Alarm ---------------------------
+
+
+
+
+
 //----------------------------------------------------------------------
 // ThreadTest
 // 	Invoke a test routine.
@@ -333,6 +377,12 @@ ThreadTest()
     case 8://test boundedbuffer
     {
         ThreadTest8();
+        break;
+    }
+
+    case 9://test alarm
+    {
+        AlarmThreadTest9();
         break;
     }
 

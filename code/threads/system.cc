@@ -18,6 +18,7 @@ Interrupt *interrupt;			// interrupt status
 Statistics *stats;			// performance metrics
 Timer *timer;				// the hardware timer device,
 					// for invoking context switches
+Alarm *alarms;
 
 #ifdef FILESYS_NEEDED
 FileSystem  *fileSystem;
@@ -60,8 +61,12 @@ extern void Cleanup();
 static void
 TimerInterruptHandler(int dummy)
 {
+    //DEBUG('a',"TimerInterruptHandler is working\n");
     if (interrupt->getStatus() != IdleMode)
-	interrupt->YieldOnReturn();
+    interrupt->YieldOnReturn();
+    alarms->Awaken();  
+
+
 }
 
 //----------------------------------------------------------------------
@@ -79,7 +84,9 @@ Initialize(int argc, char **argv)
 {
     int argCount;
     char* debugArgs = "";
-    bool randomYield = FALSE;
+    bool randomYield = TRUE;
+    RandomInit(5);  // initialize pseudo-random
+                    // number generator
 
 #ifdef USER_PROGRAM
     bool debugUserProg = FALSE;	// single step user program
@@ -103,7 +110,7 @@ Initialize(int argc, char **argv)
 	    }
 	} else if (!strcmp(*argv, "-rs")) {
 	    ASSERT(argc > 1);
-	    RandomInit(atoi(*(argv + 1)));	// initialize pseudo-random
+	    //RandomInit(atoi(*(argv + 1)));	// initialize pseudo-random
 						// number generator
 	    randomYield = TRUE;
 	    argCount = 2;
@@ -133,8 +140,11 @@ Initialize(int argc, char **argv)
     stats = new Statistics();			// collect statistics
     interrupt = new Interrupt;			// start up interrupt handling
     scheduler = new Scheduler();		// initialize the ready queue
+    randomYield = TRUE;                         // enable TimerInteruptHandler
     if (randomYield)				// start the timer (if needed)
 	timer = new Timer(TimerInterruptHandler, 0, randomYield);
+
+    alarms = new Alarm();                       // initialize the Alarm
 
     threadToBeDestroyed = NULL;
 
@@ -192,6 +202,8 @@ Cleanup()
     delete scheduler;
     delete interrupt;
     
+    delete alarms;
+
     Exit(0);
 }
 
