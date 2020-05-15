@@ -18,13 +18,13 @@ EventBarrier::~EventBarrier(){
 // Wait until the event is signaled. Return immediately if already in the signaled state.
 void EventBarrier::Wait(){
     lock->Acquire();
-    while(state==0){//unsignaled
+    if(state==0){//unsignaled
         cnt++;
         DEBUG('e',"thread %s wait. condsig cnt = %d\n",currentThread->getName(),cnt);
         condsig->Wait(lock);
-        cnt--;
+        // cnt--;
     }
-    Complete();
+    // Complete();
     lock->Release();
 }
 
@@ -44,7 +44,9 @@ void EventBarrier::Signal(){
 // Indicate that the calling thread has finished responding to a signaled event, and block
 // until all other threads that wait for this event have also responded.
 void EventBarrier::Complete(){
-    ASSERT(cnt>=0);
+    lock->Acquire();
+    ASSERT(cnt>0);
+    cnt--;
     if(cnt>0){//last one to call complete
         DEBUG('e',"thread %s wait to complete. condcom cnt = %d\n",currentThread->getName(),cnt);
         condcom->Wait(lock);
@@ -53,6 +55,7 @@ void EventBarrier::Complete(){
         condcom->Broadcast(lock);
         DEBUG('e',"thread %s complete.\n",currentThread->getName());
     }
+    lock->Release();
 }
 
 // Return a count of threads that are waiting for the event or that have not yet responded to it.

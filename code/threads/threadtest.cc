@@ -21,7 +21,6 @@
 #include <ctime>
 
 /*********************NEW ADD LXH*****************/
-#include <time.h>
 #include "sysdep.h"
 #include "Alarm.h"
 /*********************NEW ADD LXH****************/
@@ -255,9 +254,12 @@ void ThreadTest7()
 void SimpleThreadFunc8_wait(int n)
 {
     eb->Wait();
+    eb->Complete();
 }
 void SimpleThreadFunc8_signal(int n)
 {
+    while(eb->Waiters()<(n<threadnum?n:threadnum))
+        currentThread->Yield();
     eb->Signal();
 }
 void ThreadTest8()
@@ -267,11 +269,9 @@ void ThreadTest8()
     {
         sprintf(threadname[i], "%d", i);
         Thread* t = new Thread(threadname[i]);
-        if(i!=threadnum-1)
-            t->Fork(SimpleThreadFunc8_wait,i);
-        else
-            t->Fork(SimpleThreadFunc8_signal,i);
+        t->Fork(SimpleThreadFunc8_wait,i);
     }
+    SimpleThreadFunc8_signal(5);
 }
 
 
@@ -285,7 +285,6 @@ void AlarmThreadFunc1(int n)
         alarms->Pause(when);
         printf("Thread%s has been awakened.\n\n", currentThread->getName());
         //DEBUG('a',"Thread%s has been awakened.\n\n", currentThread->getName());
-            
 }
 
 void AlarmCheckThreadFunc(int n) // a SNEAKY check thread
@@ -374,7 +373,7 @@ ThreadTest()
         break;
     }
 
-    case 8://test boundedbuffer
+    case 8://test eventbarrier
     {
         ThreadTest8();
         break;
