@@ -5,6 +5,7 @@
 #include "thread.h"
 #include "system.h"
 
+#define MAXF 31
 /*
 
 Here are the method signatures for the Elevator and Building classes.
@@ -31,10 +32,19 @@ class Elevator {
    
      // insert your methods here, if needed
      void Operating();                //   elevator operating forever
+     void printState();
 
-     int floorCalled[31];    //floor was called: 1; initialvalue 0
-     EventBarrier *enterBar[31];  //enter barrier for floor i
-     EventBarrier *exitBar[31];   //exit barrier for floor i
+     int floorCalled[MAXF];       //if the buttom inside elevator was pressed
+     int floorCalledUp[MAXF];     //if floor i's up buttom was pressed
+     int floorCalledDown[MAXF];   //if floor i's down buttom was pressed
+
+     EventBarrier *enterBarUp[MAXF];    //up enter barrier for floor i
+     EventBarrier *enterBarDown[MAXF];  //
+     EventBarrier *exitBar[MAXF];       //exit barrier for floor i
+
+     Lock *lock;
+     int riderRequest;//state---riders' request num
+     Condition *cond; //if noRiders' request, sleep
      
    private:
      char *name;
@@ -45,9 +55,6 @@ class Elevator {
      int floorCounts;        //number of floors
      int elevatorID;         //ID of elevator
      int dir;                //current direction: UP 1, DOWN 0; initialvalue 1
-     Lock *lock;
-     
-     
 };
    
 class Building {
