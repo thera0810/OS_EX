@@ -64,9 +64,7 @@ TimerInterruptHandler(int dummy)
     //DEBUG('a',"TimerInterruptHandler is working\n");
     if (interrupt->getStatus() != IdleMode)
     interrupt->YieldOnReturn();
-    alarms->Awaken();  
-
-
+    alarms->Awaken();
 }
 
 //----------------------------------------------------------------------
@@ -84,7 +82,7 @@ Initialize(int argc, char **argv)
 {
     int argCount;
     char* debugArgs = "";
-    bool randomYield = TRUE;
+    bool randomYield = FALSE;
     RandomInit(5);  // initialize pseudo-random
                     // number generator
 
@@ -101,6 +99,7 @@ Initialize(int argc, char **argv)
     
     for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
 	argCount = 1;
+
 	if (!strcmp(*argv, "-d")) {
 	    if (argc == 1)
 		debugArgs = "+";	// turn on all debug flags
@@ -140,8 +139,8 @@ Initialize(int argc, char **argv)
     stats = new Statistics();			// collect statistics
     interrupt = new Interrupt;			// start up interrupt handling
     scheduler = new Scheduler();		// initialize the ready queue
-    randomYield = TRUE;                         // enable TimerInteruptHandler
-    if (randomYield)				// start the timer (if needed)
+    //randomYield = TRUE;                         // enable TimerInteruptHandler
+    //if (randomYield)				// start the timer (if needed)
 	timer = new Timer(TimerInterruptHandler, 0, randomYield);
 
     alarms = new Alarm();                       // initialize the Alarm

@@ -32,6 +32,10 @@ class Elevator {
      // insert your methods here, if needed
      void Operating();                //   elevator operating forever
 
+     int floorCalled[31];    //floor was called: 1; initialvalue 0
+     EventBarrier *enterBar[31];  //enter barrier for floor i
+     EventBarrier *exitBar[31];   //exit barrier for floor i
+     
    private:
      char *name;
      int currentfloor;           // floor where currently stopped
@@ -41,11 +45,8 @@ class Elevator {
      int floorCounts;        //number of floors
      int elevatorID;         //ID of elevator
      int dir;                //current direction: UP 1, DOWN 0; initialvalue 1
-     int floorCalled[31];    //floor was called: 1; initialvalue 1
      Lock *lock;
-     Alarm *elevatorAlarm;        //was used during Operating
-     EventBarrier *enterBar[31];  //enter barrier for floor i
-     EventBarrier *exitBar[31];   //exit barrier for floor i
+     
      
 };
    

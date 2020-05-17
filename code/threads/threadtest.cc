@@ -268,13 +268,14 @@ void SimpleThreadFunc8_signal(int n)
 void ThreadTest8()
 {
     DEBUG('t', "Entering ThreadTest8");
-    for (int i = 0; i < threadnum; ++i)
+    int i=0;
+    for (i = 0; i < threadnum; ++i)
     {
         sprintf(threadname[i], "%d", i);
         Thread* t = new Thread(threadname[i]);
         t->Fork(SimpleThreadFunc8_wait,i);
     }
-    SimpleThreadFunc8_signal(5);
+    SimpleThreadFunc8_signal(i);
 }
 
 
@@ -315,7 +316,7 @@ void AlarmThreadTest9()
 
 //--------------------------- ThreadTest 10 Elevator ---------------------------
 
-Building *building = new Building("Castle Building",floors,1);
+Building *building = new Building("Building",floors,1);
 
 void ElevatorThreadFunc()  //Elevator Thread
 {
@@ -331,28 +332,26 @@ void RiderThreadFunc(int id)                //Rider Threads
 
     if (srcFloor == dstFloor)
         return;
-
-    DEBUG('t',"Rider %d travelling from %d to %d\n",id,srcFloor,dstFloor);
+    DEBUG('E',"\033[1;33;40mRider %d travelling from %d to %d\033[m\n\n",id,srcFloor,dstFloor);
     do {
         if (srcFloor < dstFloor) {
-            DEBUG('t', "Rider %d CallUp(%d)\n", id, srcFloor);
+            DEBUG('E',"\033[1;33;40mRider %d CallUp(%d)\033[m\n\n",id, srcFloor);
             building->CallUp(srcFloor);
-            DEBUG('t', "Rider %d AwaitUp(%d)\n", id, srcFloor);
+            DEBUG('E',"\033[1;33;40mRider %d AwaitUp(%d)\033[m\n\n",id, srcFloor);
             e = building->AwaitUp(srcFloor);
         } else {
-            DEBUG('t', "Rider %d CallDown(%d)\n", id, srcFloor);
+            DEBUG('E',"\033[1;33;40mRider %d CallDown(%d)\033[m\n\n",id, srcFloor);
             building->CallDown(srcFloor);
-            DEBUG('t', "Rider %d AwaitDown(%d)\n", id, srcFloor);
+            DEBUG('E',"\033[1;33;40mRider %d AwaitDown(%d)\033[m\n\n",id, srcFloor);
             e = building->AwaitDown(srcFloor);
         }
-        DEBUG('t', "Rider %d Enter()\n", id);
+        //DEBUG('t', "Rider %d Enter()\n", id);
     } while (!e->Enter()); // elevator might be full!
-
-    DEBUG('t', "Rider %d RequestFloor(%d)\n", id, dstFloor);
+    DEBUG('E',"\033[1;33;40mRider %d RequestFloor(%d)\033[m\n\n",id, dstFloor);
     e->RequestFloor(dstFloor); // doesn't return until arrival
-    DEBUG('t', "Rider %d Exit()\n", id);
+    //DEBUG('t', "Rider %d Exit()\n", id);
     e->Exit();
-    DEBUG('t', "Rider %d finished\n", id);
+    DEBUG('E',"\033[1;33;40mRider %d finished\033[m\n\n",id);
 }
 
 
@@ -362,19 +361,17 @@ void ElevatorTest10()
 
     srand(time(NULL));
 
-    ElevatorThreadFunc();
-
     for (int i = 0; i < threadnum; ++i)
     {
         sprintf(threadname[i], "%d", i);
         Thread* t = new Thread(threadname[i]);
         t->Fork(RiderThreadFunc, i);
     }
-    
+
+    ElevatorThreadFunc();
 }
 
-
-//--------------------------- ThreadTest 9 Elevator ---------------------------
+//--------------------------- ThreadTest 10 Elevator ---------------------------
 
 
 //----------------------------------------------------------------------
@@ -449,7 +446,7 @@ ThreadTest()
         break;
     }
 
-    case 10://
+    case 10://test elevator
     {
         ElevatorTest10();
         break;
