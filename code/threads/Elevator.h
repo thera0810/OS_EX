@@ -5,7 +5,7 @@
 #include "thread.h"
 #include "system.h"
 
-#define MAXF 31
+#define MAXF 100
 /*
 
 Here are the method signatures for the Elevator and Building classes.

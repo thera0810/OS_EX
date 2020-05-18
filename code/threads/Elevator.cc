@@ -168,10 +168,11 @@ void Elevator::Operating()//   elevator operating forever
 
 		//no rider in or request elevator, sheep
 		static int dml=0;
-		lock->Acquire();
+
 		dml++;
 		if(dml==10)
 			printState();
+		lock->Acquire();
 		while(riderRequest==0&&occupancy==0){
 			DEBUG('E',"\033[1;32;40mNo task or request, elevator sleep\033[m\n\n");
 			cond->Wait(lock);

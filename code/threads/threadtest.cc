@@ -41,6 +41,7 @@ BoundedBuffer * bf=new BoundedBuffer(10);
 
 //EventBarrier
 EventBarrier* eb=new EventBarrier();
+Building *building;
 //Alarm* alarms=new Alarm();
 //---------------------------ThreadTest1---------------------------
 
@@ -313,7 +314,6 @@ void AlarmThreadTest9()
 
 //--------------------------- ThreadTest 10 Elevator ---------------------------
 
-Building *building = new Building("Building",floors,1);
 int f1[3]={5,5,3};
 int f2[3]={3,2,3};
 
@@ -366,6 +366,8 @@ void ElevatorTest10()
     srand(time(NULL));
     int ele=threadnum-1;
     ele=ele<threadnum-1?ele:threadnum-1;//change elevator's order here
+    
+    building = new Building("Building",floors,1);
 
     for (int i = 0; i < threadnum; ++i)
     {
