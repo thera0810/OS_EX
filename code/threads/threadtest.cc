@@ -314,8 +314,8 @@ void AlarmThreadTest9()
 
 //--------------------------- ThreadTest 10 Elevator ---------------------------
 
-int f1[3]={7,7,7};
-int f2[3]={1,1,1};
+int f1[3]={3,5,4};
+int f2[3]={5,2,1};
 
 void ElevatorThreadFunc(int i)  //Elevator Thread
 {
@@ -328,15 +328,18 @@ void RiderThreadFunc(int id)                //Rider Threads
 
     int srcFloor,dstFloor,tmp=0;
 
-    // tmp=1;
+    tmp=1;
 
     if(tmp==1){
         srcFloor =f1[id];
         dstFloor =f2[id];
     }
-    else{
+    else
+    {
         srcFloor = (rand()%floors)+1;
-        dstFloor = (rand()%floors)+1;
+        do{
+            dstFloor = (rand()%floors)+1;
+        }while(dstFloor==srcFloor);
     }
 
     DEBUG('E',"\033[1;33;40mRider %d travelling from %d to %d\033[m\n",id,srcFloor,dstFloor);
@@ -372,7 +375,7 @@ void ElevatorTest10()
 
     srand(time(NULL));
     int ele=threadnum-1;
-    ele=0;
+    //ele=0;
     ele=ele<threadnum-1?ele:threadnum-1;//change elevator's order here
     
     building = new Building("Building",floors,1);

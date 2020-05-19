@@ -55,6 +55,7 @@ class Elevator {
      int floorCounts;        //number of floors
      int elevatorID;         //ID of elevator
      int dir;                //current direction: UP 1, DOWN 0; initialvalue 1
+     int open;               //the state of the door, initial value=0
 };
    
 class Building {
