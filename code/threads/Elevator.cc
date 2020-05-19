@@ -8,11 +8,11 @@ extern int capacity;
 Elevator::Elevator(char* debugName, int numFloors, int myID)
 {
 	name=debugName;
-	currentfloor=0;//to pick up rider on floor1
+	currentfloor=1;//to pick up rider on floor1
 	occupancy=0;
 	floorCounts=numFloors;
 	elevatorID=myID;
-	dir=1;
+	dir=0;
 	lock = new Lock("Elevator lock");
     int i;
     for (i=1;i<=numFloors;i++)
@@ -60,6 +60,10 @@ void Elevator::OpenDoors()//   signal exiters and enterers to action
 void Elevator::CloseDoors()//   after exiters are out and enterers are in
 {
 	currentThread->Yield();//to get all riders' request and do better visit
+	// if(currentfloor==floorCounts&&dir==1)
+	// 	dir=0;
+	// else if(currentfloor==1&&dir==0)
+	// 	dir=1;
 	DEBUG('E',"\033[1;33;40mElevator %d CloseDoors on %d floor.\033[m\n\n", elevatorID, currentfloor);
 }
 
@@ -126,25 +130,31 @@ void Elevator::RequestFloor(int floor)//   tell the elevator our destinationFloo
 
 void Elevator::Operating()//   elevator operating forever
 {
-	// int flag;
 	while (true)
 	{
-		// flag=0;
 		if (dir==1) //UP
 		{
 			for (int i=currentfloor+1;i<=floorCounts;i++)
 			{
 				if (floorCalledUp[i]==1||floorCalled[i]==1)
 				{
-					// flag=1;
 					VisitFloor(i);
 					OpenDoors();
 					CloseDoors();
 				}
 			}
-			currentfloor=floorCounts+1;
-			dir=0;// ready to down
-			DEBUG('E',"\033[1;32;40mElevator ready to go downstairs.\033[m\n\n");
+			for(int i=floorCounts;i>=1;--i){
+				if(floorCalledDown[i]==1){
+					VisitFloor(i);
+					dir=0;
+					OpenDoors();
+					CloseDoors();
+					break;
+				}
+			}
+			// currentfloor=floorCounts+1;
+			// dir=0;// ready to down
+			// DEBUG('E',"\033[1;32;40mElevator ready to go downstairs.\033[m\n\n");
 		}
 		else if (dir==0)
 		{
@@ -152,26 +162,32 @@ void Elevator::Operating()//   elevator operating forever
 			{
 				if (floorCalledDown[i]==1||floorCalled[i]==1)
 				{
-					// flag=1;
 					VisitFloor(i);
 					OpenDoors();
 					CloseDoors();
 				}
 			}
-			currentfloor=0;
-			dir=1;
-			DEBUG('E',"\033[1;32;40mElevator ready to go upstairs.\033[m\n\n");
+			for(int i=1;i<=floorCounts;++i){
+				if(floorCalledUp[i]==1){
+					VisitFloor(i);
+					dir=1;
+					OpenDoors();
+					CloseDoors();
+					// DEBUG('E',"\033[1;32;40mElevator ready to go upstairs.\033[m\n\n");
+					break;
+				}
+			}
+			// currentfloor=0;
+			// dir=1;
+			// DEBUG('E',"\033[1;32;40mElevator ready to go upstairs.\033[m\n\n");
 		}
-
-		// if (flag==0)
-		// 	currentThread->Yield();
 
 		//no rider in or request elevator, sheep
 		static int dml=0;
-
 		dml++;
 		if(dml==10)
 			printState();
+
 		lock->Acquire();
 		while(riderRequest==0&&occupancy==0){
 			DEBUG('E',"\033[1;32;40mNo task or request, elevator sleep\033[m\n\n");
