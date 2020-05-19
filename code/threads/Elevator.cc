@@ -100,7 +100,7 @@ bool Elevator::Enter()//   get in
 	}
 	else
 	{
-		DEBUG('E',"\033[1;33;40mFULL!! Rider %s can not enter elevator %d on (%d) floor.\033[m\n\n",currentThread->getName(),elevatorID,currentfloor);
+		DEBUG('E',"\033[1;31;40mFULL!! Rider %s can not enter elevator %d on (%d) floor.\033[m\n\n",currentThread->getName(),elevatorID,currentfloor);
 		if(dir==1){
 			floorCalledDown[currentfloor]=0;
 			enterBarUp[currentfloor]->Complete();
@@ -109,7 +109,7 @@ bool Elevator::Enter()//   get in
 			floorCalledDown[currentfloor]=0;
 			enterBarDown[currentfloor]->Complete();
 		}
-		// currentThread->Yield();
+		currentThread->Yield();//let elevator change state of EnterBar
 		return false;
 	}
 }
@@ -149,11 +149,11 @@ void Elevator::Operating()//   elevator operating forever
 					dir=0;
 					OpenDoors();
 					CloseDoors();
+					// DEBUG('E',"\033[1;32;40mElevator ready to go downstairs.\033[m\n\n");
 					break;
 				}
 			}
-			// currentfloor=floorCounts+1;
-			// dir=0;// ready to down
+			dir=0;// to pick fail-enterd rider
 			// DEBUG('E',"\033[1;32;40mElevator ready to go downstairs.\033[m\n\n");
 		}
 		else if (dir==0)
@@ -177,21 +177,21 @@ void Elevator::Operating()//   elevator operating forever
 					break;
 				}
 			}
-			// currentfloor=0;
-			// dir=1;
+			dir=1;
 			// DEBUG('E',"\033[1;32;40mElevator ready to go upstairs.\033[m\n\n");
 		}
 
 		//no rider in or request elevator, sheep
-		static int dml=0;
-		dml++;
-		if(dml==10)
-			printState();
+		// static int dml=0;
+		// dml++;
+		// if(dml==10)
+		// 	printState();
 
 		lock->Acquire();
 		while(riderRequest==0&&occupancy==0){
 			DEBUG('E',"\033[1;32;40mNo task or request, elevator sleep\033[m\n\n");
 			cond->Wait(lock);
+			DEBUG('E',"\033[1;32;40melevator start working\033[m\n\n");
 		}
 		lock->Release();
 	}
