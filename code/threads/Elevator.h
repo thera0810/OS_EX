@@ -33,6 +33,8 @@ class Elevator {
      // insert your methods here, if needed
      void Operating();                //   elevator operating forever
      void printState();
+     int noneedUp(int here);
+     int noneedDown(int here);
 
      int floorCalled[MAXF];       //if the buttom inside elevator was pressed
      int floorCalledUp[MAXF];     //if floor i's up buttom was pressed

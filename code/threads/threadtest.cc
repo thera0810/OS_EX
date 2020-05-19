@@ -314,8 +314,8 @@ void AlarmThreadTest9()
 
 //--------------------------- ThreadTest 10 Elevator ---------------------------
 
-int f1[3]={3,5,4};
-int f2[3]={5,2,1};
+int f1[3]={1,7,1};
+int f2[3]={4,2,3};
 
 void ElevatorThreadFunc(int i)  //Elevator Thread
 {
@@ -328,7 +328,7 @@ void RiderThreadFunc(int id)                //Rider Threads
 
     int srcFloor,dstFloor,tmp=0;
 
-    tmp=1;
+    // tmp=1;
 
     if(tmp==1){
         srcFloor =f1[id];

@@ -132,56 +132,105 @@ void Elevator::RequestFloor(int floor)//   tell the elevator our destinationFloo
 	exitBar[floor]->Wait();
 }
 
+int Elevator::noneedUp(int here){
+	int flag=1;
+	for(int i=here+1;i<=floorCounts;++i){
+		if (floorCalledUp[i]==1||floorCalled[i]==1)
+			{
+				flag=0;
+				break;
+			}
+	}
+	return flag;
+}
+
+int Elevator::noneedDown(int here){
+	int flag=1;
+	for(int i=here-1;i>=1;--i){
+		if (floorCalledDown[i]==1||floorCalled[i]==1)
+			{
+				flag=0;
+				break;
+			}
+	}
+	return flag;
+}
+
 void Elevator::Operating()//   elevator operating forever
 {
-	int flag=0; //there is no UP/DOWN task
-	while (true)
+	// int flag=0; //there is no UP/DOWN task
+	while (true)//main loop
 	{
 		if (dir==1) //UP
 		{
 			for (int i=currentfloor+1;i<=floorCounts;i++)
 			{
-				flag = 0;
-				if (floorCalledUp[i]==1||floorCalled[i]==1)
+				// flag = 0;
+				if (floorCalledUp[i]==1||floorCalled[i]==1) //need to go i floor
 				{
 					VisitFloor(i);
 					OpenDoors();
-					for (int j=i+1;j<=floorCounts;j++)
-					{
-						if (floorCalledUp[j]==1||floorCalled[j]==1)
-						{
-							flag=1; //there are still UP tasks
-							break;
+
+					//if need to go up
+					// for (int j=i+1;j<=floorCounts;j++)
+					// {
+					// 	if (floorCalledUp[j]==1||floorCalled[j]==1)
+					// 	{
+					// 		flag=1; //there are still UP tasks
+					// 		break;
+					// 	}
+					// }
+
+					if(noneedUp(i)){//no need to up but still have the need to pick down-request rider
+						if(floorCalledDown[i]==1){	//this floor has down request
+							dir = 0;				//then turn direction and pick the down-request rider
+							floorCalledDown[currentfloor] = 0;
+							if(enterBarDown[currentfloor]->Waiters()>0)
+								enterBarDown[currentfloor]->Signal();
 						}
-					}
-					if (flag==1) //there are still UP tasks, close the door and go UP
-					{
 						CloseDoors();
-					}
-				}
-			}
-			for(int i=floorCounts;i>=1;--i)//消除转向缺陷
-			{
-				if (floorCalledDown[i]==1&&enterBarDown[i]->Waiters()>0)//really called and waiting
-				{
-					if (i==currentfloor&&open==1) //the same floor and the door is open
-					{
-						dir = 0;
-						floorCalledDown[currentfloor] = 0;
-						if(enterBarDown[currentfloor]->Waiters()>0)
-							enterBarDown[currentfloor]->Signal();
-						CloseDoors();
+						break;
 					}
 					else
-					{
-						VisitFloor(i);
-						dir=0;
-						OpenDoors();
 						CloseDoors();
-					}
+
+					// if (flag==1) //there are still UP tasks, close the door and go UP
+					// {
+					// 	CloseDoors();
+					// }
+				}
+			}
+			for(int i=floorCounts;i>=1;--i){//check down request
+				if(floorCalledDown[i]==1){
+					VisitFloor(i);
+					dir=0;
+					OpenDoors();
+					CloseDoors();
 					break;
 				}
 			}
+			// for(int i=floorCounts;i>=1;--i)//消除转向缺陷
+			// {
+			// 	if (floorCalledDown[i]==1&&enterBarDown[i]->Waiters()>0)//really called and waiting
+			// 	{
+			// 		if (i==currentfloor&&open==1) //the same floor and the door is open
+			// 		{
+			// 			dir = 0;
+			// 			floorCalledDown[currentfloor] = 0;
+			// 			if(enterBarDown[currentfloor]->Waiters()>0)
+			// 				enterBarDown[currentfloor]->Signal();
+			// 			CloseDoors();
+			// 		}
+			// 		else
+			// 		{
+			// 			VisitFloor(i);
+			// 			dir=0;
+			// 			OpenDoors();
+			// 			CloseDoors();
+			// 		}
+			// 		break;
+			// 	}
+			// }
 			dir=0;// to pick fail-enterd rider
 			// DEBUG('E',"\033[1;32;40mElevator ready to go downstairs.\033[m\n\n");
 		}
@@ -189,47 +238,71 @@ void Elevator::Operating()//   elevator operating forever
 		{
 			for (int i=currentfloor-1;i>=1;i--)
 			{
-				flag=0;
+				// flag=0;
 				if (floorCalledDown[i]==1||floorCalled[i]==1)
 				{
 					VisitFloor(i);
 					OpenDoors();
-					for (int j=i-1;j>=1;j--)
-					{
-						if (floorCalledDown[j]==1||floorCalled[j]==1)
-						{
-							flag=1;//there are still DOWN tasks
-							break;
+
+					// for (int j=i-1;j>=1;j--)
+					// {
+					// 	if (floorCalledDown[j]==1||floorCalled[j]==1)
+					// 	{
+					// 		flag=1;//there are still DOWN tasks
+					// 		break;
+					// 	}
+					// }
+
+					if(noneedDown(i)){
+						if(floorCalledUp[i]==1){
+							dir = 1;
+							floorCalledUp[currentfloor] = 0;
+							if(enterBarUp[currentfloor]->Waiters()>0)
+								enterBarUp[currentfloor]->Signal();
 						}
-					}
-					if (flag==1)//there are still DOWN tasks, close the door and go DOWN
-					{
 						CloseDoors();
-					}
-				}
-			}
-			for(int i=1;i<=floorCounts;i++)//消除转向缺陷
-			{
-				if (floorCalledUp[i]==1&&enterBarUp[i]->Waiters()>0)  //really called and waiting
-				{
-					if (i==currentfloor&&open==1)//the same floor and the door is open
-					{
-						dir = 1;
-						floorCalledUp[currentfloor] = 0;
-						if(enterBarUp[currentfloor]->Waiters()>0)
-							enterBarUp[currentfloor]->Signal();
-						CloseDoors();
+						break;
 					}
 					else
-					{
-						VisitFloor(i);
-						dir=1;
-						OpenDoors();
 						CloseDoors();
-					}
+
+					// if (flag==1)//there are still DOWN tasks, close the door and go DOWN
+					// {
+					// 	CloseDoors();
+					// }
+				}
+			}
+			for(int i=1;i<=floorCounts;++i){
+				if(floorCalledUp[i]==1){
+					VisitFloor(i);
+					dir=1;
+					OpenDoors();
+					CloseDoors();
 					break;
 				}
 			}
+			// for(int i=1;i<=floorCounts;i++)//消除转向缺陷
+			// {
+			// 	if (floorCalledUp[i]==1&&enterBarUp[i]->Waiters()>0)  //really called and waiting
+			// 	{
+			// 		if (i==currentfloor&&open==1)//the same floor and the door is open
+			// 		{
+			// 			dir = 1;
+			// 			floorCalledUp[currentfloor] = 0;
+			// 			if(enterBarUp[currentfloor]->Waiters()>0)
+			// 				enterBarUp[currentfloor]->Signal();
+			// 			CloseDoors();
+			// 		}
+			// 		else
+			// 		{
+			// 			VisitFloor(i);
+			// 			dir=1;
+			// 			OpenDoors();
+			// 			CloseDoors();
+			// 		}
+			// 		break;
+			// 	}
+			// }
 			dir=1;
 			// DEBUG('E',"\033[1;32;40mElevator ready to go upstairs.\033[m\n\n");
 		}
