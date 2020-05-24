@@ -35,27 +35,23 @@ class Elevator {
    
      // insert your methods here, if needed
      void Operating();                //   elevator operating forever
-     void printState();
-     int noneedUp(int here);
+     int noneedUp(int here);          //   as name
      int noneedDown(int here);
+     void SetBuilding(Building *b);   //this elevator's building
 
-     int floorCalled[MAXF];       //if the buttom inside elevator was pressed
-     
-     EventBarrier *exitBar[MAXF];       //exit barrier for floor i
+     int floorCalled[MAXF];           //if the buttom inside elevator was pressed
+     EventBarrier *exitBar[MAXF];     //exit barrier for floor i
 
-     void SetBuilding(Building *b);
    private:
-    void getelevID();  
-   private:
+     void getelevID();            //this elevator's id
      char *name;
-     int currentfloor;           // floor where currently stopped
-     int occupancy;              // how many riders currently onboard
-   
+     int currentfloor;            // floor where currently stopped
+     int occupancy;               // how many riders currently onboard
+
      // insert your data structures here, if needed
      int floorCounts;        //number of floors
      int elevatorID;         //ID of elevator
      int dir;                //current direction: UP 1, DOWN 0; initialvalue 1
-     int open;               //the state of the door, initial value=0
      Building *building;
 };
    
@@ -64,32 +60,30 @@ class Building {
      Building(char *debugname, int numFloors, int numElevators);
      ~Building();
      char *getName() { return name; }
-   
-   				
+
      // elevator rider interface (part 2): called by rider threads
-     void CallUp(int fromFloor);      //   signal an elevator we want to go up
-     void CallDown(int fromFloor);    //   ... down
-     Elevator *AwaitUp(int fromFloor); // wait for elevator arrival & going up
-     Elevator *AwaitDown(int fromFloor); // ... down
+     void CallUp(int fromFloor);          //   put the buttom to up
+     void CallDown(int fromFloor);
+     Elevator *AwaitUp(int fromFloor);    //   wait for elevator arrival & going up
+     Elevator *AwaitDown(int fromFloor);
+     Elevator *GetElevator();             // return the base of elevators
 
-     Elevator *GetElevator();
-
-     void StartElevator();             // tell elevator to operating forever
-     void GetUpID(int floor, int elevatorID); 
+     void StartElevator();                // tell elevator to operating forever
+     void GetUpID(int floor, int elevatorID);     //is the elevatorID to go up to floor
      void GetDownID(int floor, int elevatorID);
      Lock *lock;
      Condition *cond; //if noRiders' request, sleep
 
-     int floorCalledUp[MAXF];     //if floor i's up buttom was pressed
-     int floorCalledDown[MAXF];   //if floor i's down buttom was pressed
-     EventBarrier *enterBarUp[MAXF];    //up enter barrier for floor i
-     EventBarrier *enterBarDown[MAXF];  //
+     int floorCalledUp[MAXF];             //if floor i's up buttom was pressed
+     int floorCalledDown[MAXF];
+     EventBarrier *enterBarUp[MAXF];      //up enter barrier for floor i
+     EventBarrier *enterBarDown[MAXF];
      int riderRequest;//state---riders' request num
    
    private:
      char *name;
      Elevator *elevator;         // the elevators in the building (array)
-   
+
      // insert your data structures here, if needed
      int floorCounts;        //number of floors
      int elevatorCounts;     //number of elevators
@@ -97,7 +91,6 @@ class Building {
      int *elevatorDownID;
      Lock *upIDLock;
      Lock *downIDLock;
-
 };
 
    // here's a sample portion of a rider thread body showing how we

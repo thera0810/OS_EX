@@ -53,7 +53,7 @@
 #include "utility.h"
 #include "system.h"
 #include "hello.h"
-#include "../dllist/dllist.h"
+#include "dllist.h"
 
 #ifdef THREADS
 extern int testnum;

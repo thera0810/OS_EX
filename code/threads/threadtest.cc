@@ -1,9 +1,9 @@
 // threadtest.cc 
-//	Simple test case for the threads assignment.
+//  Simple test case for the threads assignment.
 //
-//	Create two threads, and have them context switch
-//	back and forth between themselves by calling Thread::Yield, 
-//	to illustratethe inner workings of the thread system.
+//  Create two threads, and have them context switch
+//  back and forth between themselves by calling Thread::Yield, 
+//  to illustratethe inner workings of the thread system.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
 // All rights reserved.  See copyright.h for copyright notice and limitation 
@@ -124,87 +124,87 @@ void ThreadTest2()
 
 void SimpleThreadFunc3(int n)
 {
-	ls->Append(NULL);
-	ls->Show();
+    ls->Append(NULL);
+    ls->Show();
 }
 void ThreadTest3()
 {
-	DEBUG('t', "Entering ThreadTest3");
-	dllFunc1(ls, 3);
-	for (int i = 0; i < threadnum; ++i)
-	{
-		sprintf(threadname[i], "%d", i);
-		Thread* t = new Thread(threadname[i]);
-		t->Fork(SimpleThreadFunc3, i);
-	}
+    DEBUG('t', "Entering ThreadTest3");
+    dllFunc1(ls, 3);
+    for (int i = 0; i < threadnum; ++i)
+    {
+        sprintf(threadname[i], "%d", i);
+        Thread* t = new Thread(threadname[i]);
+        t->Fork(SimpleThreadFunc3, i);
+    }
 }
 
 //---------------------------ThreadTest4 dllist---------------------------
 
 void SimpleThreadFunc4(int n)
 {
-	ls->SortedInsert(NULL, n);
-	ls->Show();
+    ls->SortedInsert(NULL, n);
+    ls->Show();
 }
 
 void ThreadTest4()
 {
-	DEBUG('t', "Entering ThreadTest4");
-	ls->SortedInsert(NULL, 5);
-	ls->SortedInsert(NULL, 15);
-	ls->Show();
-	for (int i = 0; i < threadnum; ++i)
-	{
-		sprintf(threadname[i], "%d", i);
-		Thread* t = new Thread(threadname[i]);
-		t->Fork(SimpleThreadFunc4, i+10);
-	}
+    DEBUG('t', "Entering ThreadTest4");
+    ls->SortedInsert(NULL, 5);
+    ls->SortedInsert(NULL, 15);
+    ls->Show();
+    for (int i = 0; i < threadnum; ++i)
+    {
+        sprintf(threadname[i], "%d", i);
+        Thread* t = new Thread(threadname[i]);
+        t->Fork(SimpleThreadFunc4, i+10);
+    }
 }
 
 //---------------------------ThreadTest 5 Table---------------------------
 
 void TableThreadFunc0(int n) // allocate 5 item continueously
 {
-	int* object = new int();
-	*object = n;
+    int* object = new int();
+    *object = n;
     for(int i=0;i<5;++i)
-	   tb->Alloc(object);
+       tb->Alloc(object);
 }
 
 void TableThreadFunc1(int n) // release from 0 to tablesize one by one
 {
-	int i;
-	for (i = 0; i < tablesize; i++) {
-		int j = i%3;
-		tb->Release(j);
-		currentThread->Yield();
-	}
+    int i;
+    for (i = 0; i < tablesize; i++) {
+        int j = i%3;
+        tb->Release(j);
+        currentThread->Yield();
+    }
 }
 
 void TableThreadTest5()
 {
-	DEBUG('t', "Entering TableThreadTest5");
-	for (int i = 0; i < threadnum; ++i)
-	{
-		sprintf(threadname[i], "%d", i);
-		Thread* t = new Thread(threadname[i]);
-		if (i == 1) t->Fork(TableThreadFunc1, i);
-		else t->Fork(TableThreadFunc0, i);
-	}
+    DEBUG('t', "Entering TableThreadTest5");
+    for (int i = 0; i < threadnum; ++i)
+    {
+        sprintf(threadname[i], "%d", i);
+        Thread* t = new Thread(threadname[i]);
+        if (i == 1) t->Fork(TableThreadFunc1, i);
+        else t->Fork(TableThreadFunc0, i);
+    }
 }
 
 //---------------------------ThreadTest 6 Table---------------------------
 
 void TableThreadTest6()
 {
-	DEBUG('t', "Entering TableThreadTest6");
-	for (int i = 0; i < threadnum; ++i)
-	{
-		sprintf(threadname[i], "%d", i);
-		Thread* t = new Thread(threadname[i]);
-		if(i==0) t->Fork(TableThreadFunc0, i);
-		else t->Fork(TableThreadFunc1, i);
-	}
+    DEBUG('t', "Entering TableThreadTest6");
+    for (int i = 0; i < threadnum; ++i)
+    {
+        sprintf(threadname[i], "%d", i);
+        Thread* t = new Thread(threadname[i]);
+        if(i==0) t->Fork(TableThreadFunc0, i);
+        else t->Fork(TableThreadFunc1, i);
+    }
 }
 
 
@@ -316,12 +316,11 @@ void AlarmThreadTest9()
 
 //--------------------------- ThreadTest 10 Elevator ---------------------------
 
-int f1[3]={1,7,1};
-int f2[3]={4,2,3};
+int f1[5]={1,1,1,1,1};
+int f2[5]={4,4,4,4,4};
 
 void ElevatorThreadFunc(int id)  //Elevator Thread
 {
-    DEBUG('E',"\n==========Elevator %d Start Operating==========\n\n",id);
     elevators[id].Operating();
 }
 
@@ -362,13 +361,9 @@ void RiderThreadFunc(int id)                //Rider Threads
             DEBUG('E',"\033[1;33;40mRider %d AwaitDown(%d)\033[m\n\n",id, srcFloor);
             e = building->AwaitDown(srcFloor);
         }
-        //DEBUG('t', "Rider %d Enter()\n", id);
     } while (!e->Enter()); // elevator might be full!
-    // DEBUG('E',"\033[1;33;40mRider %d RequestFloor(%d)\033[m\n\n",id, dstFloor);
     e->RequestFloor(dstFloor); // doesn't return until arrival
-    //DEBUG('t', "Rider %d Exit()\n", id);
     e->Exit();
-    DEBUG('E',"\033[1;33;40mRider %d finished\033[m\n\n",id);
 }
 
 
@@ -388,18 +383,15 @@ void ElevatorTest10()
     {
         sprintf(threadname[i], "elevator%d", i);
         Thread* t = new Thread(threadname[i]);
-
         t->Fork(ElevatorThreadFunc, i);
     }
+
     for (int i = 0; i < threadnum; ++i)
     {
-        sprintf(threadname[i], "rider%d", i);
+        sprintf(threadname[i], "%d", i);
         Thread* t = new Thread(threadname[i]);
         t->Fork(RiderThreadFunc, i);
     }
-            
-
-    
 }
 
 //--------------------------- ThreadTest 10 Elevator ---------------------------
@@ -407,7 +399,7 @@ void ElevatorTest10()
 
 //----------------------------------------------------------------------
 // ThreadTest
-// 	Invoke a test routine.
+//  Invoke a test routine.
 //----------------------------------------------------------------------
 void
 ThreadTest()
@@ -431,12 +423,12 @@ ThreadTest()
         break;
     }
 
-	case 3://overwrite(pointer error) lxh 81
-	{
-		// ./nachos -q 81 -T 2	
-		ThreadTest3();
-		break;
-	}
+    case 3://overwrite(pointer error) lxh 81
+    {
+        // ./nachos -q 81 -T 2  
+        ThreadTest3();
+        break;
+    }
 
     case 4:// insert disorder lxh 60
     {
@@ -445,19 +437,19 @@ ThreadTest()
         break;
     }
 
-	case 5:// Table Threadtest
-	{
-		// ./nachos -d b -q 5 -T 3  
-		TableThreadTest5();
-		break;
-	}
+    case 5:// Table Threadtest
+    {
+        // ./nachos -d b -q 5 -T 3  
+        TableThreadTest5();
+        break;
+    }
 
-	case 6:// Table Threadtest
-	{
-		// ./nachos -d b -q 6 -T 2  
-		TableThreadTest6();
-		break;
-	}
+    case 6:// Table Threadtest
+    {
+        // ./nachos -d b -q 6 -T 2  
+        TableThreadTest6();
+        break;
+    }
 
     case 7://test boundedbuffer
     {
@@ -479,6 +471,7 @@ ThreadTest()
 
     case 10://test elevator
     {
+        //./nachos -d E -q 10 -F 9 -T 5 -V 3
         ElevatorTest10();//-T rider number; -V elevator number.
         break;
     }
@@ -491,4 +484,3 @@ ThreadTest()
 
     }
 }
-
