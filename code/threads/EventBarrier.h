@@ -1,3 +1,5 @@
+#ifndef EVENTBARRIER_H
+#define EVENTBARRIER_H
 #include "synch.h"
 
 class EventBarrier{
@@ -19,3 +21,5 @@ private:
     Condition *condsig,*condcom;
     int state,cnt;
 };
+
+#endif 

@@ -6,6 +6,9 @@
 #include "system.h"
 
 #define MAXF 100
+#include <new>
+class Building;
+class Elevator;
 /*
 
 Here are the method signatures for the Elevator and Building classes.
@@ -37,17 +40,12 @@ class Elevator {
      int noneedDown(int here);
 
      int floorCalled[MAXF];       //if the buttom inside elevator was pressed
-     int floorCalledUp[MAXF];     //if floor i's up buttom was pressed
-     int floorCalledDown[MAXF];   //if floor i's down buttom was pressed
-
-     EventBarrier *enterBarUp[MAXF];    //up enter barrier for floor i
-     EventBarrier *enterBarDown[MAXF];  //
+     
      EventBarrier *exitBar[MAXF];       //exit barrier for floor i
 
-     Lock *lock;
-     int riderRequest;//state---riders' request num
-     Condition *cond; //if noRiders' request, sleep
-     
+     void SetBuilding(Building *b);
+   private:
+    void getelevID();  
    private:
      char *name;
      int currentfloor;           // floor where currently stopped
@@ -58,6 +56,7 @@ class Elevator {
      int elevatorID;         //ID of elevator
      int dir;                //current direction: UP 1, DOWN 0; initialvalue 1
      int open;               //the state of the door, initial value=0
+     Building *building;
 };
    
 class Building {
@@ -73,7 +72,19 @@ class Building {
      Elevator *AwaitUp(int fromFloor); // wait for elevator arrival & going up
      Elevator *AwaitDown(int fromFloor); // ... down
 
+     Elevator *GetElevator();
+
      void StartElevator();             // tell elevator to operating forever
+     void GetUpID(int floor, int elevatorID); 
+     void GetDownID(int floor, int elevatorID);
+     Lock *lock;
+     Condition *cond; //if noRiders' request, sleep
+
+     int floorCalledUp[MAXF];     //if floor i's up buttom was pressed
+     int floorCalledDown[MAXF];   //if floor i's down buttom was pressed
+     EventBarrier *enterBarUp[MAXF];    //up enter barrier for floor i
+     EventBarrier *enterBarDown[MAXF];  //
+     int riderRequest;//state---riders' request num
    
    private:
      char *name;
@@ -82,6 +93,11 @@ class Building {
      // insert your data structures here, if needed
      int floorCounts;        //number of floors
      int elevatorCounts;     //number of elevators
+     int *elevatorUpID;
+     int *elevatorDownID;
+     Lock *upIDLock;
+     Lock *downIDLock;
+
 };
 
    // here's a sample portion of a rider thread body showing how we

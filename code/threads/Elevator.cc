@@ -14,33 +14,31 @@ Elevator::Elevator(char* debugName, int numFloors, int myID)
 	elevatorID=myID;
 	dir=0;
 	open=0;
-	lock = new Lock("Elevator lock");
     int i;
     for (i=1;i<=numFloors;i++)
     {
     	floorCalled[i] = 0;
-    	floorCalledUp[i]=0;
-    	floorCalledDown[i]=0;
-
-    	enterBarUp[i] = new EventBarrier();
-    	enterBarDown[i] = new EventBarrier();
     	exitBar[i] = new EventBarrier();
     }
-
-    riderRequest=0;
-    cond = new Condition("Elevator condition");
+    building = NULL;
 }
 
 Elevator::~Elevator()
 {
-    delete lock;
-    delete cond;
     int i;
     for (i=1;i<=floorCounts;i++)
-    {
-		delete enterBarUp[i];
-		delete enterBarDown[i];
 		delete exitBar[i]; 
+}
+
+void Elevator::getelevID()
+{
+    if (dir == 1)
+    {
+        building->GetUpID(currentfloor, elevatorID);
+    }
+    else // direction == DOWN
+    {
+        building->GetDownID(currentfloor, elevatorID);
     }
 }
 
@@ -50,12 +48,14 @@ void Elevator::OpenDoors()//   signal exiters and enterers to action
 	DEBUG('E',"\033[1;33;40mElevator %d OpenDoors on %d floor.\033[m\n\n", elevatorID, currentfloor);
 	if (exitBar[currentfloor]->Waiters()>0)
 		exitBar[currentfloor]->Signal();
+	getelevID();
 
-	if (enterBarUp[currentfloor]->Waiters()>0&&dir==1)// move up and rider request up
-		enterBarUp[currentfloor]->Signal();
+	if (building->enterBarUp[currentfloor]->Waiters()>0&&dir==1)// move up and rider request up
+		building->enterBarUp[currentfloor]->Signal();
 
-	if(enterBarDown[currentfloor]->Waiters()>0&&dir==0)
-		enterBarDown[currentfloor]->Signal();
+	if(building->enterBarDown[currentfloor]->Waiters()>0&&dir==0)
+		building->enterBarDown[currentfloor]->Signal();
+
 
 }
 
@@ -63,20 +63,21 @@ void Elevator::CloseDoors()//   after exiters are out and enterers are in
 {
 	open=0;
 	currentThread->Yield();//to get all riders' request and do better visit
-	//currentThread->Yield();//to get all riders' request and do better visit
-	// if(currentfloor==floorCounts&&dir==1)
-	// 	dir=0;
-	// else if(currentfloor==1&&dir==0)
-	// 	dir=1;
 	DEBUG('E',"\033[1;33;40mElevator %d CloseDoors on %d floor.\033[m\n\n", elevatorID, currentfloor);
 }
 
 void Elevator::VisitFloor(int floor)//   go to a particular floor
 {
 	if (floor>currentfloor)
+	{
+		DEBUG('E',"Elevator %d is operating for %d Time Unit .\n\n", elevatorID, 10*(floor-currentfloor));
 		alarms->Pause(10*(floor-currentfloor));
+	}
 	else
+	{
+		DEBUG('E',"Elevator %d is operating for %d Time Unit .\n\n", elevatorID, 10*(currentfloor-floor));
 		alarms->Pause(10*(currentfloor-floor));
+	}
 
 	currentfloor=floor;
 	floorCalled[floor]=0;
@@ -85,20 +86,20 @@ void Elevator::VisitFloor(int floor)//   go to a particular floor
 
 bool Elevator::Enter()//   get in
 {
-	riderRequest--;
+	building->riderRequest--;
 	// printf("*** rr:%d\n",riderRequest);
-	ASSERT(riderRequest>=0);
+	ASSERT(building->riderRequest>=0);
 	if (occupancy<capacity)
 	{
 		occupancy++;
 		DEBUG('E',"\033[1;33;40mRider %s enter elevator %d on (%d) floor.\033[m\n",currentThread->getName(),elevatorID,currentfloor);
 		if(dir==1){
-			floorCalledUp[currentfloor]=0;
-			enterBarUp[currentfloor]->Complete();
+			building->floorCalledUp[currentfloor]=0;
+			building->enterBarUp[currentfloor]->Complete();
 		}
 		else{
-			floorCalledDown[currentfloor]=0;
-			enterBarDown[currentfloor]->Complete();
+			building->floorCalledDown[currentfloor]=0;
+			building->enterBarDown[currentfloor]->Complete();
 		}
 		return true;
 	}
@@ -106,12 +107,12 @@ bool Elevator::Enter()//   get in
 	{
 		DEBUG('E',"\033[1;31;40mFULL!! Rider %s can not enter elevator %d on (%d) floor.\033[m\n\n",currentThread->getName(),elevatorID,currentfloor);
 		if(dir==1){
-			floorCalledDown[currentfloor]=0;
-			enterBarUp[currentfloor]->Complete();
+			building->floorCalledDown[currentfloor]=0;
+			building->enterBarUp[currentfloor]->Complete();
 		}
 		else{
-			floorCalledDown[currentfloor]=0;
-			enterBarDown[currentfloor]->Complete();
+			building->floorCalledDown[currentfloor]=0;
+			building->enterBarDown[currentfloor]->Complete();
 		}
 		currentThread->Yield();//let elevator change state of EnterBar
 		return false;
@@ -135,7 +136,7 @@ void Elevator::RequestFloor(int floor)//   tell the elevator our destinationFloo
 int Elevator::noneedUp(int here){
 	int flag=1;
 	for(int i=here+1;i<=floorCounts;++i){
-		if (floorCalledUp[i]==1||floorCalled[i]==1)
+		if (building->floorCalledUp[i]==1||floorCalled[i]==1)
 			{
 				flag=0;
 				break;
@@ -147,7 +148,7 @@ int Elevator::noneedUp(int here){
 int Elevator::noneedDown(int here){
 	int flag=1;
 	for(int i=here-1;i>=1;--i){
-		if (floorCalledDown[i]==1||floorCalled[i]==1)
+		if (building->floorCalledDown[i]==1||floorCalled[i]==1)
 			{
 				flag=0;
 				break;
@@ -166,27 +167,18 @@ void Elevator::Operating()//   elevator operating forever
 			for (int i=currentfloor+1;i<=floorCounts;i++)
 			{
 				// flag = 0;
-				if (floorCalledUp[i]==1||floorCalled[i]==1) //need to go i floor
+				if (building->floorCalledUp[i]==1||floorCalled[i]==1) //need to go i floor
 				{
 					VisitFloor(i);
 					OpenDoors();
 
-					//if need to go up
-					// for (int j=i+1;j<=floorCounts;j++)
-					// {
-					// 	if (floorCalledUp[j]==1||floorCalled[j]==1)
-					// 	{
-					// 		flag=1; //there are still UP tasks
-					// 		break;
-					// 	}
-					// }
 
 					if(noneedUp(i)){//no need to up but still have the need to pick down-request rider
-						if(floorCalledDown[i]==1){	//this floor has down request
+						if(building->floorCalledDown[i]==1){	//this floor has down request
 							dir = 0;				//then turn direction and pick the down-request rider
-							floorCalledDown[currentfloor] = 0;
-							if(enterBarDown[currentfloor]->Waiters()>0)
-								enterBarDown[currentfloor]->Signal();
+							building->floorCalledDown[currentfloor] = 0;
+							if(building->enterBarDown[currentfloor]->Waiters()>0)
+								building->enterBarDown[currentfloor]->Signal();
 						}
 						CloseDoors();
 						break;
@@ -194,14 +186,10 @@ void Elevator::Operating()//   elevator operating forever
 					else
 						CloseDoors();
 
-					// if (flag==1) //there are still UP tasks, close the door and go UP
-					// {
-					// 	CloseDoors();
-					// }
 				}
 			}
 			for(int i=floorCounts;i>=1;--i){//check down request
-				if(floorCalledDown[i]==1){
+				if(building->floorCalledDown[i]==1){
 					VisitFloor(i);
 					dir=0;
 					OpenDoors();
@@ -209,28 +197,7 @@ void Elevator::Operating()//   elevator operating forever
 					break;
 				}
 			}
-			// for(int i=floorCounts;i>=1;--i)//消除转向缺陷
-			// {
-			// 	if (floorCalledDown[i]==1&&enterBarDown[i]->Waiters()>0)//really called and waiting
-			// 	{
-			// 		if (i==currentfloor&&open==1) //the same floor and the door is open
-			// 		{
-			// 			dir = 0;
-			// 			floorCalledDown[currentfloor] = 0;
-			// 			if(enterBarDown[currentfloor]->Waiters()>0)
-			// 				enterBarDown[currentfloor]->Signal();
-			// 			CloseDoors();
-			// 		}
-			// 		else
-			// 		{
-			// 			VisitFloor(i);
-			// 			dir=0;
-			// 			OpenDoors();
-			// 			CloseDoors();
-			// 		}
-			// 		break;
-			// 	}
-			// }
+			
 			dir=0;// to pick fail-enterd rider
 			// DEBUG('E',"\033[1;32;40mElevator ready to go downstairs.\033[m\n\n");
 		}
@@ -239,26 +206,18 @@ void Elevator::Operating()//   elevator operating forever
 			for (int i=currentfloor-1;i>=1;i--)
 			{
 				// flag=0;
-				if (floorCalledDown[i]==1||floorCalled[i]==1)
+				if (building->floorCalledDown[i]==1||floorCalled[i]==1)
 				{
 					VisitFloor(i);
 					OpenDoors();
 
-					// for (int j=i-1;j>=1;j--)
-					// {
-					// 	if (floorCalledDown[j]==1||floorCalled[j]==1)
-					// 	{
-					// 		flag=1;//there are still DOWN tasks
-					// 		break;
-					// 	}
-					// }
 
 					if(noneedDown(i)){
-						if(floorCalledUp[i]==1){
+						if(building->floorCalledUp[i]==1){
 							dir = 1;
-							floorCalledUp[currentfloor] = 0;
-							if(enterBarUp[currentfloor]->Waiters()>0)
-								enterBarUp[currentfloor]->Signal();
+							building->floorCalledUp[currentfloor] = 0;
+							if(building->enterBarUp[currentfloor]->Waiters()>0)
+								building->enterBarUp[currentfloor]->Signal();
 						}
 						CloseDoors();
 						break;
@@ -266,14 +225,10 @@ void Elevator::Operating()//   elevator operating forever
 					else
 						CloseDoors();
 
-					// if (flag==1)//there are still DOWN tasks, close the door and go DOWN
-					// {
-					// 	CloseDoors();
-					// }
 				}
 			}
 			for(int i=1;i<=floorCounts;++i){
-				if(floorCalledUp[i]==1){
+				if(building->floorCalledUp[i]==1){
 					VisitFloor(i);
 					dir=1;
 					OpenDoors();
@@ -281,50 +236,23 @@ void Elevator::Operating()//   elevator operating forever
 					break;
 				}
 			}
-			// for(int i=1;i<=floorCounts;i++)//消除转向缺陷
-			// {
-			// 	if (floorCalledUp[i]==1&&enterBarUp[i]->Waiters()>0)  //really called and waiting
-			// 	{
-			// 		if (i==currentfloor&&open==1)//the same floor and the door is open
-			// 		{
-			// 			dir = 1;
-			// 			floorCalledUp[currentfloor] = 0;
-			// 			if(enterBarUp[currentfloor]->Waiters()>0)
-			// 				enterBarUp[currentfloor]->Signal();
-			// 			CloseDoors();
-			// 		}
-			// 		else
-			// 		{
-			// 			VisitFloor(i);
-			// 			dir=1;
-			// 			OpenDoors();
-			// 			CloseDoors();
-			// 		}
-			// 		break;
-			// 	}
-			// }
+
 			dir=1;
 			// DEBUG('E',"\033[1;32;40mElevator ready to go upstairs.\033[m\n\n");
 		}
 
-		//no rider in or request elevator, sheep
-		// static int dml=0;
-		// dml++;
-		// if(dml==10)
-		// 	printState();
-
-		lock->Acquire();
-		while(riderRequest==0&&occupancy==0){
-			DEBUG('E',"\033[1;32;40mNo task or request, elevator sleep\033[m\n\n");
-			cond->Wait(lock);
-			DEBUG('E',"\033[1;32;40melevator start working\033[m\n\n");
+		building->lock->Acquire();
+		while(building->riderRequest==0&&occupancy==0){
+			DEBUG('E',"\033[1;32;40mNo task or request, elevator %d sleep\033[m\n\n",elevatorID);
+			building->cond->Wait(building->lock);
+			DEBUG('E',"\033[1;32;40melevator %d start working\033[m\n\n",elevatorID);
 		}
-		lock->Release();
+		building->lock->Release();
 	}
 }
 
 void Elevator::printState(){//print current state of the elevator
-	printf("** riderRequest:%d\n", riderRequest);
+	printf("** riderRequest:%d\n", building->riderRequest);
 	printf("** occupancy:%d\n", occupancy);
 	printf("** currentfloor:%d\n",currentfloor);
 	printf("** floor called: ");
@@ -333,14 +261,20 @@ void Elevator::printState(){//print current state of the elevator
 			printf("%d ",i);
 	printf("\n** floor calledUp: ");
 	for(int i=1;i<=floorCounts;++i)
-		if(floorCalledUp[i])
+		if(building->floorCalledUp[i])
 			printf("%d ",i);
 	printf("\n** floor calledDown: ");
 	for(int i=1;i<=floorCounts;++i)
-		if(floorCalledDown[i])
+		if(building->floorCalledDown[i])
 			printf("%d ",i);
 	printf("\n");
 }
+
+void Elevator::SetBuilding(Building *b)
+{
+    building = b;
+}
+
 //******************************building ****************************************
 
 Building::Building(char *debugname, int numFloors, int numElevators)
@@ -348,56 +282,82 @@ Building::Building(char *debugname, int numFloors, int numElevators)
 	name=debugname;
 	floorCounts=numFloors;
 	elevatorCounts=numElevators;
-	elevator = new Elevator("E1",numFloors,1);
+    elevatorUpID = new int[numFloors];
+    elevatorDownID = new int[numFloors];
+    upIDLock = new Lock("upIDLock");
+    downIDLock = new Lock("downIDLock");
+    lock = new Lock("Elevator lock");
+    cond = new Condition("Elevator condition");
+    riderRequest=0;
+    elevator = (Elevator *)::operator new[](sizeof(Elevator) * numElevators);
+    for (int i = 0; i < numElevators; i++)
+    {
+        new (&elevator[i]) Elevator("BuildingElevator", numFloors, i);
+        elevator[i].SetBuilding(this);
+    }
+    int i;
+    for (i=1;i<=numFloors;i++)
+    {
+    	floorCalledUp[i]=0;
+    	floorCalledDown[i]=0;
+    	enterBarUp[i] = new EventBarrier();
+    	enterBarDown[i] = new EventBarrier();
+    }
 }
 
 Building::~Building()
 {
-	delete elevator;
+	delete[] elevatorUpID;
+    delete[] elevatorDownID;
+    delete upIDLock;
+    delete downIDLock;
+    delete lock;
+    delete cond;
+    int i;
+    for (i=1;i<=floorCounts;i++)
+    {
+		delete enterBarUp[i];
+		delete enterBarDown[i];
+    }
+    for (i = 0; i < elevatorCounts; i++)
+    {
+        elevator[i].~Elevator();
+    }
+    ::operator delete[](elevator);
 }
 
 void Building::CallUp(int fromFloor)//   signal an elevator we want to go up
 {
-	elevator->riderRequest++;
-	elevator->floorCalledUp[fromFloor]=1;//press floor's up buttom
+	riderRequest++;
+	floorCalledUp[fromFloor]=1;//press floor's up buttom
 	
-	elevator->lock->Acquire();
-	elevator->cond->Broadcast(elevator->lock);
-	elevator->lock->Release();
+	lock->Acquire();
+	cond->Broadcast(lock);
+	lock->Release();
 	
 }
 
 void Building::CallDown(int fromFloor)//   signal an elevator we want to go down
 {
-	elevator->riderRequest++;
-	elevator->floorCalledDown[fromFloor]=1;
+	riderRequest++;
+	floorCalledDown[fromFloor]=1;
 	
-	elevator->lock->Acquire();
-	elevator->cond->Broadcast(elevator->lock);
-	elevator->lock->Release();
+	lock->Acquire();
+	cond->Broadcast(lock);
+	lock->Release();
 	
 }
 
 Elevator* Building::AwaitUp(int fromFloor)// wait for elevator arrival & going up
 {
-	elevator->enterBarUp[fromFloor]->Wait();
-	/*
-	elevator->lock->Acquire();
-	elevator->cond->Broadcast(elevator->lock);
-	elevator->lock->Release();
-	*/
-	return elevator;
+	enterBarUp[fromFloor]->Wait();
+	return elevator + elevatorUpID[fromFloor];
 }
 
 Elevator* Building::AwaitDown(int fromFloor)// wait for elevator arrival & going down
 {
-	elevator->enterBarDown[fromFloor]->Wait();
-	/*
-	elevator->lock->Acquire();
-	elevator->cond->Broadcast(elevator->lock);
-	elevator->lock->Release();
-	*/
-	return elevator;
+	enterBarDown[fromFloor]->Wait();
+	return elevator + elevatorDownID[fromFloor];
 }
 
 void Building::StartElevator()// tell elevator to operating forever
@@ -406,3 +366,21 @@ void Building::StartElevator()// tell elevator to operating forever
 	elevator->Operating();
 }
 
+void Building::GetUpID(int floor, int elevatorID)
+{
+    upIDLock->Acquire();
+    elevatorUpID[floor] = elevatorID;
+    upIDLock->Release();
+}
+
+void Building::GetDownID(int floor, int elevatorID)
+{
+    downIDLock->Acquire();
+    elevatorDownID[floor] = elevatorID;
+    downIDLock->Release();
+}
+
+Elevator *Building::GetElevator()
+{
+    return elevator;
+}

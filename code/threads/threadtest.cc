@@ -17,7 +17,7 @@
 #include "synch.h"
 #include "Table.h"
 #include "BoundedBuffer.h"
-//#include "EventBarrier.h"
+#include "EventBarrier.h"
 #include "Elevator.h"
 #include <ctime>
 
@@ -31,6 +31,7 @@ int testnum = 1;
 int threadnum=2;
 int N=10;
 int floors=30;
+int elevs=1;
 int capacity=7;
 char threadname[10][20]={{0}};
 DLList *ls=new DLList();
@@ -42,6 +43,7 @@ BoundedBuffer * bf=new BoundedBuffer(10);
 //EventBarrier
 EventBarrier* eb=new EventBarrier();
 Building *building;
+Elevator *elevators;
 //Alarm* alarms=new Alarm();
 //---------------------------ThreadTest1---------------------------
 
@@ -317,9 +319,10 @@ void AlarmThreadTest9()
 int f1[3]={1,7,1};
 int f2[3]={4,2,3};
 
-void ElevatorThreadFunc(int i)  //Elevator Thread
+void ElevatorThreadFunc(int id)  //Elevator Thread
 {
-    building->StartElevator();
+    DEBUG('E',"\n==========Elevator %d Start Operating==========\n\n",id);
+    elevators[id].Operating();
 }
 
 void RiderThreadFunc(int id)                //Rider Threads
@@ -328,7 +331,7 @@ void RiderThreadFunc(int id)                //Rider Threads
 
     int srcFloor,dstFloor,tmp=0;
 
-    // tmp=1;
+    tmp=1;
 
     if(tmp==1){
         srcFloor =f1[id];
@@ -378,17 +381,23 @@ void ElevatorTest10()
     //ele=0;
     ele=ele<threadnum-1?ele:threadnum-1;//change elevator's order here
     
-    building = new Building("Building",floors,1);
+    building = new Building("Building",floors,elevs);
+    elevators = building->GetElevator();
 
+    for (int i = 0; i < elevs; ++i)
+    {
+        sprintf(threadname[i], "elevator%d", i);
+        Thread* t = new Thread(threadname[i]);
+
+        t->Fork(ElevatorThreadFunc, i);
+    }
     for (int i = 0; i < threadnum; ++i)
     {
-        sprintf(threadname[i], "%d", i);
+        sprintf(threadname[i], "rider%d", i);
         Thread* t = new Thread(threadname[i]);
-        if(i!=ele)
-            t->Fork(RiderThreadFunc, i);
-        else
-            t->Fork(ElevatorThreadFunc, i);
+        t->Fork(RiderThreadFunc, i);
     }
+            
 
     
 }
@@ -470,7 +479,7 @@ ThreadTest()
 
     case 10://test elevator
     {
-        ElevatorTest10();
+        ElevatorTest10();//-T rider number; -V elevator number.
         break;
     }
 
