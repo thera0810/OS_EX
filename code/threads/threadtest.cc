@@ -316,9 +316,17 @@ void AlarmThreadTest9()
 
 
 //--------------------------- ThreadTest 10 Elevator ---------------------------
+//单电梯测试 1
+int f1[5]={3,1,3,5,3};
+int f2[5]={5,5,4,2,1};
 
-int f1[5]={1,3,5,3};
-int f2[5]={5,5,2,1};
+// //单电梯超载 2
+// int f1[5]={3,2,4,6};
+// int f2[5]={5,6,6,2};
+
+// //多电梯 3
+// int f1[5]={12,3,7,12};
+// int f2[5]={5,5,4,6};
 
 void ElevatorThreadFunc(int id)  //Elevator Thread
 {
@@ -464,7 +472,7 @@ ThreadTest()
         break;
     }
 
-    case 9://test alarm
+    case 9://test alarm -d a
     {
         AlarmThreadTest9();
         break;
