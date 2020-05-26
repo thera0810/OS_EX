@@ -390,7 +390,7 @@ void ElevatorTest10()
     for (int i = 0; i < elevs; ++i)
     {
         sprintf(threadname_[i], "elevator%d", i);
-        Thread* t = new Thread(threadname[i]);
+        Thread* t = new Thread(threadname_[i]);
         t->Fork(ElevatorThreadFunc, i);
     }
 }
