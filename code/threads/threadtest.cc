@@ -34,6 +34,7 @@ int floors=30;
 int elevs=1;
 int capacity=7;
 char threadname[10][20]={{0}};
+char threadname_[10][20]={{0}};
 DLList *ls=new DLList();
 
 int tablesize = 3;
@@ -316,8 +317,8 @@ void AlarmThreadTest9()
 
 //--------------------------- ThreadTest 10 Elevator ---------------------------
 
-int f1[5]={1,1,1,1,1};
-int f2[5]={4,4,4,4,4};
+int f1[5]={1,3,5,3};
+int f2[5]={5,5,2,1};
 
 void ElevatorThreadFunc(int id)  //Elevator Thread
 {
@@ -379,18 +380,18 @@ void ElevatorTest10()
     building = new Building("Building",floors,elevs);
     elevators = building->GetElevator();
 
-    for (int i = 0; i < elevs; ++i)
-    {
-        sprintf(threadname[i], "elevator%d", i);
-        Thread* t = new Thread(threadname[i]);
-        t->Fork(ElevatorThreadFunc, i);
-    }
-
     for (int i = 0; i < threadnum; ++i)
     {
         sprintf(threadname[i], "%d", i);
         Thread* t = new Thread(threadname[i]);
         t->Fork(RiderThreadFunc, i);
+    }
+
+    for (int i = 0; i < elevs; ++i)
+    {
+        sprintf(threadname_[i], "elevator%d", i);
+        Thread* t = new Thread(threadname[i]);
+        t->Fork(ElevatorThreadFunc, i);
     }
 }
 
